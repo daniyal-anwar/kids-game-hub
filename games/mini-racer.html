@@ -1,0 +1,1758 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mini Racer • Kids Game Hub</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        color: white;
+        background: radial-gradient(
+          circle at top,
+          #27245a 0%,
+          #15142f 45%,
+          #0b0b1b 100%
+        );
+      }
+
+      .page {
+        width: min(800px, 92%);
+        margin: auto;
+        padding: 20px 0 25px;
+      }
+
+      .top {
+        text-align: center;
+        margin-bottom: 14px;
+      }
+
+      .game-label {
+        color: #74b9ff;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+      }
+
+      h1 {
+        font-size: clamp(28px, 5vw, 42px);
+        font-weight: 900;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .greeting {
+        margin-top: 5px;
+        color: #c9c7df;
+        font-size: 14px;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .hud-box {
+        background: rgba(20, 19, 50, 0.9);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 14px;
+        padding: 8px;
+        text-align: center;
+      }
+
+      .hud-label {
+        color: #aaa8c5;
+        font-size: 9px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      .hud-value {
+        margin-top: 3px;
+        font-size: 20px;
+        font-weight: 900;
+      }
+
+      .game-card {
+        position: relative;
+        background: rgba(15, 15, 38, 0.94);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 22px;
+        padding: 12px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.35),
+          0 0 30px rgba(108, 99, 217, 0.08);
+      }
+
+      #gameArea {
+        position: relative;
+        height: 360px;
+        overflow: hidden;
+        border-radius: 17px;
+        background: #303033;
+        border: 1px solid rgba(116, 185, 255, 0.2);
+        touch-action: none;
+        user-select: none;
+      }
+
+      /* =========================
+       ROAD
+    ========================= */
+
+      .shoulder {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 20%;
+        background: repeating-linear-gradient(
+          0deg,
+          #55555a 0px,
+          #55555a 28px,
+          #626267 28px,
+          #626267 56px
+        );
+      }
+
+      .shoulder.left {
+        left: 0;
+      }
+
+      .shoulder.right {
+        right: 0;
+      }
+
+      .road {
+        position: absolute;
+        left: 20%;
+        right: 20%;
+        top: 0;
+        bottom: 0;
+        background: #252529;
+        overflow: hidden;
+      }
+
+      .edge {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        background: white;
+        z-index: 5;
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+      }
+
+      .edge.left {
+        left: 0;
+      }
+
+      .edge.right {
+        right: 0;
+      }
+
+      .lane-divider {
+        position: absolute;
+        top: -70px;
+        bottom: -70px;
+        width: 4px;
+        background: repeating-linear-gradient(
+          to bottom,
+          white 0px,
+          white 30px,
+          transparent 30px,
+          transparent 68px
+        );
+        opacity: 0.8;
+        z-index: 2;
+      }
+
+      .lane-divider.one {
+        left: 33.333%;
+      }
+
+      .lane-divider.two {
+        left: 66.666%;
+      }
+
+      /* =========================
+       PLAYER CAR
+    ========================= */
+
+      #player {
+        position: absolute;
+        width: 44px;
+        height: 72px;
+        left: 50%;
+        bottom: 24px;
+        transform: translateX(-50%);
+        z-index: 20;
+        transition: filter 0.15s ease;
+      }
+
+      .player-body {
+        position: absolute;
+        left: 6px;
+        top: 4px;
+        width: 32px;
+        height: 64px;
+        border-radius: 11px 11px 8px 8px;
+        background: linear-gradient(90deg, #5750c9, #8b82f0, #5750c9);
+        border: 2px solid #aaa4ff;
+        box-shadow:
+          0 0 15px rgba(129, 117, 232, 0.7),
+          inset 0 0 7px rgba(255, 255, 255, 0.2);
+      }
+
+      .player-window {
+        position: absolute;
+        left: 9px;
+        top: 15px;
+        width: 20px;
+        height: 25px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #dce8ff, #536b8c);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+
+      .light {
+        position: absolute;
+        width: 6px;
+        height: 5px;
+        border-radius: 2px;
+      }
+
+      .head-left {
+        left: 7px;
+        top: 6px;
+        background: white;
+        box-shadow: 0 0 8px white;
+      }
+
+      .head-right {
+        right: 7px;
+        top: 6px;
+        background: white;
+        box-shadow: 0 0 8px white;
+      }
+
+      .tail-left {
+        left: 8px;
+        bottom: 6px;
+        background: #ff3e48;
+        box-shadow: 0 0 5px #ff3e48;
+      }
+
+      .tail-right {
+        right: 8px;
+        bottom: 6px;
+        background: #ff3e48;
+        box-shadow: 0 0 5px #ff3e48;
+      }
+
+      .wheel {
+        position: absolute;
+        width: 7px;
+        height: 16px;
+        background: #111;
+        border-radius: 3px;
+      }
+
+      .w1 {
+        left: 0;
+        top: 14px;
+      }
+
+      .w2 {
+        right: 0;
+        top: 14px;
+      }
+
+      .w3 {
+        left: 0;
+        bottom: 12px;
+      }
+
+      .w4 {
+        right: 0;
+        bottom: 12px;
+      }
+
+      /* =========================
+       TRAFFIC CARS
+    ========================= */
+
+      .traffic {
+        position: absolute;
+        width: 42px;
+        height: 68px;
+        transform: translateX(-50%);
+        z-index: 10;
+      }
+
+      .traffic-body {
+        position: absolute;
+        left: 6px;
+        top: 4px;
+        width: 30px;
+        height: 60px;
+        border-radius: 10px;
+        background: linear-gradient(90deg, #d94451, #ff6974, #c93645);
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+      }
+
+      .traffic-window {
+        position: absolute;
+        left: 9px;
+        top: 12px;
+        width: 20px;
+        height: 20px;
+        border-radius: 5px;
+        background: #202b40;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .traffic-front-light {
+        position: absolute;
+        width: 6px;
+        height: 4px;
+        top: 5px;
+        border-radius: 2px;
+        background: #fff;
+      }
+
+      .traffic-front-light.left {
+        left: 8px;
+      }
+
+      .traffic-front-light.right {
+        right: 8px;
+      }
+
+      .traffic-wheel {
+        position: absolute;
+        width: 7px;
+        height: 15px;
+        border-radius: 3px;
+        background: #111;
+      }
+
+      .tw1 {
+        left: 0;
+        top: 13px;
+      }
+
+      .tw2 {
+        right: 0;
+        top: 13px;
+      }
+
+      .tw3 {
+        left: 0;
+        bottom: 10px;
+      }
+
+      .tw4 {
+        right: 0;
+        bottom: 10px;
+      }
+
+      .traffic.suv .traffic-body {
+        background: linear-gradient(90deg, #307db9, #63b4ec, #28689d);
+        height: 62px;
+      }
+
+      .traffic.taxi .traffic-body {
+        background: linear-gradient(90deg, #c18b0d, #ffd642, #b77c0b);
+      }
+
+      .traffic.sports .traffic-body {
+        border-radius: 14px 14px 7px 7px;
+        background: linear-gradient(90deg, #a931c5, #ed68ff, #8d25ab);
+      }
+
+      .traffic.police .traffic-body {
+        background: linear-gradient(90deg, #20242d, #f1f1f1, #20242d);
+      }
+
+      .traffic.truck {
+        width: 48px;
+        height: 78px;
+      }
+
+      .traffic.truck .traffic-body {
+        left: 4px;
+        width: 40px;
+        height: 70px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, #5f6972, #aeb8c0, #59636b);
+      }
+
+      /* =========================
+       COINS
+    ========================= */
+
+      .coin {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        z-index: 12;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+        background: radial-gradient(
+          circle,
+          #fff0a5 0%,
+          #ffd43b 45%,
+          #c28b00 100%
+        );
+        border: 2px solid #fff1a2;
+        box-shadow: 0 0 12px rgba(255, 212, 59, 0.8);
+        animation: coinSpin 0.7s linear infinite;
+      }
+
+      @keyframes coinSpin {
+        0%,
+        100% {
+          transform: translateX(-50%) scaleX(1);
+        }
+
+        50% {
+          transform: translateX(-50%) scaleX(0.35);
+        }
+      }
+
+      /* =========================
+       SCORE POPUP
+    ========================= */
+
+      .score-pop {
+        position: absolute;
+        z-index: 35;
+        pointer-events: none;
+        font-size: 14px;
+        font-weight: 900;
+        color: #ffd85a;
+        animation: scorePop 0.7s ease-out forwards;
+      }
+
+      @keyframes scorePop {
+        from {
+          opacity: 1;
+          transform: translate(-50%, 0);
+        }
+
+        to {
+          opacity: 0;
+          transform: translate(-50%, -35px);
+        }
+      }
+
+      /* =========================
+       STATUS
+    ========================= */
+
+      #status {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 30;
+        padding: 6px 12px;
+        border-radius: 20px;
+        background: rgba(8, 8, 25, 0.7);
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.2s;
+      }
+
+      #status.show {
+        opacity: 1;
+      }
+
+      /* =========================
+       OVERLAY
+    ========================= */
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(8, 8, 25, 0.78);
+        backdrop-filter: blur(8px);
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      .overlay-box {
+        width: min(390px, 90%);
+        padding: 25px 20px;
+        text-align: center;
+        border-radius: 22px;
+        background: rgba(25, 23, 59, 0.97);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .trophy {
+        font-size: 48px;
+        margin-bottom: 7px;
+      }
+
+      .overlay-small {
+        color: #74b9ff;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+
+      .overlay-box h2 {
+        margin-top: 5px;
+        font-size: 27px;
+      }
+
+      .final-score-label {
+        color: #aaa8c5;
+        font-size: 11px;
+        margin-top: 15px;
+        letter-spacing: 1px;
+      }
+
+      .final-score {
+        font-size: 45px;
+        font-weight: 900;
+        margin-top: 2px;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .record-message {
+        color: #55c88a;
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 5px;
+        min-height: 20px;
+      }
+
+      .overlay-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .overlay-button {
+        border: none;
+        padding: 11px 22px;
+        border-radius: 12px;
+        color: white;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+      }
+
+      .close-button {
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+      }
+
+      /* =========================
+       CONTROLS
+    ========================= */
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      .control-button {
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        color: white;
+        padding: 10px 17px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+
+      .control-button:hover {
+        transform: translateY(-2px);
+        border-color: #8175e8;
+      }
+
+      .restart-button {
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+        border-color: transparent;
+      }
+
+      .instructions {
+        text-align: center;
+        color: #9290aa;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+
+      .back-to-games {
+        display: block;
+        width: fit-content;
+        margin: 10px auto 0;
+        padding: 9px 15px;
+        border-radius: 9px;
+        color: #cfcdf4;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        transition: 0.2s ease;
+      }
+
+      .back-to-games:hover {
+        color: white;
+        background: rgba(129, 117, 232, 0.18);
+        border-color: rgba(129, 117, 232, 0.4);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 600px) {
+        .page {
+          padding: 15px 0 20px;
+        }
+
+        #gameArea {
+          height: 330px;
+        }
+
+        .hud {
+          gap: 5px;
+        }
+
+        .hud-box {
+          padding: 7px 4px;
+        }
+
+        .hud-value {
+          font-size: 17px;
+        }
+
+        .control-button {
+          padding: 9px 13px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="top">
+        <div class="game-label">🏎️ GAME 08 • RACING</div>
+
+        <h1>Mini Racer</h1>
+
+        <div id="greeting" class="greeting">Ready, Player!</div>
+      </div>
+
+      <div class="hud">
+        <div class="hud-box">
+          <div class="hud-label">SCORE</div>
+          <div id="score" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">BEST</div>
+          <div id="best" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">SPEED</div>
+          <div id="speed" class="hud-value">1</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">LIVES</div>
+          <div id="lives" class="hud-value">❤️❤️❤️</div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div id="gameArea">
+          <div class="shoulder left"></div>
+          <div class="shoulder right"></div>
+
+          <div class="road">
+            <div class="edge left"></div>
+            <div class="edge right"></div>
+
+            <div class="lane-divider one"></div>
+            <div class="lane-divider two"></div>
+          </div>
+
+          <div id="status"></div>
+
+          <div id="player">
+            <div class="wheel w1"></div>
+            <div class="wheel w2"></div>
+            <div class="wheel w3"></div>
+            <div class="wheel w4"></div>
+
+            <div class="player-body">
+              <div class="light head-left"></div>
+              <div class="light head-right"></div>
+
+              <div class="player-window"></div>
+
+              <div class="light tail-left"></div>
+              <div class="light tail-right"></div>
+            </div>
+          </div>
+
+          <div id="overlay" class="overlay">
+            <div class="overlay-box">
+              <div id="trophy" class="trophy">🏎️</div>
+
+              <div id="overlaySmall" class="overlay-small">READY?</div>
+
+              <h2 id="overlayTitle">MINI RACER</h2>
+
+              <div class="final-score-label">
+                DODGE TRAFFIC • COLLECT COINS • SURVIVE
+              </div>
+
+              <div id="finalScore" class="final-score">0</div>
+
+              <div id="recordMessage" class="record-message">
+                🏁 Ready to race!
+              </div>
+
+              <div class="overlay-actions">
+                <button id="startButton" class="overlay-button">
+                  🚀 START GAME
+                </button>
+
+                <button id="closeButton" class="overlay-button close-button">
+                  ✕ CLOSE
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="soundButton" class="control-button">🔊 Sound On</button>
+
+          <button id="restartButton" class="control-button restart-button">
+            🔄 Restart Game
+          </button>
+        </div>
+
+        <div class="instructions">
+          ⬅️ ➡️ / A D • 🖱️ Click a lane • 📱 Tap a lane • 🪙 Collect coins
+        </div>
+      </div>
+
+      <a href="../index.html#games" class="back-to-games"> ← Back to Games </a>
+    </div>
+
+    <script>
+      /* ==========================================
+         ELEMENTS
+      ========================================== */
+
+      const gameArea = document.getElementById("gameArea");
+
+      const player = document.getElementById("player");
+
+      const scoreEl = document.getElementById("score");
+
+      const bestEl = document.getElementById("best");
+
+      const speedEl = document.getElementById("speed");
+
+      const livesEl = document.getElementById("lives");
+
+      const overlay = document.getElementById("overlay");
+
+      const startButton = document.getElementById("startButton");
+
+      const restartButton = document.getElementById("restartButton");
+
+      const closeButton = document.getElementById("closeButton");
+
+      const soundButton = document.getElementById("soundButton");
+
+      const finalScoreEl = document.getElementById("finalScore");
+
+      const recordMessage = document.getElementById("recordMessage");
+
+      const overlayTitle = document.getElementById("overlayTitle");
+
+      const overlaySmall = document.getElementById("overlaySmall");
+
+      const trophy = document.getElementById("trophy");
+
+      const statusEl = document.getElementById("status");
+
+      const greeting = document.getElementById("greeting");
+
+      /* ==========================================
+         PLAYER NAME
+      ========================================== */
+
+      const savedName = localStorage.getItem("kidsGamePlayerName");
+
+      if (savedName) {
+        greeting.textContent = "Ready, " + savedName + "!";
+      }
+
+      /* ==========================================
+         GAME STATE
+      ========================================== */
+
+      let running = false;
+
+      let score = 0;
+
+      let lives = 3;
+
+      let best = Number(localStorage.getItem("miniRacerBest")) || 0;
+
+      let lastTime = 0;
+
+      let animation = null;
+
+      let trafficTimer = 0;
+
+      let coinTimer = 0;
+
+      let roadOffset = 0;
+
+      let invulnerableUntil = 0;
+
+      let soundOn = true;
+
+      /*
+        Prevents progression from being
+        awarded more than once during
+        a single completed race.
+      */
+
+      let progressionAwarded = false;
+
+      /* ==========================================
+         THREE LANES
+      ========================================== */
+
+      const lanes = [30, 50, 70];
+
+      let playerLane = 1;
+
+      let targetLane = 1;
+
+      let playerX = 50;
+
+      /* ==========================================
+         TRAFFIC / COINS
+      ========================================== */
+
+      let traffic = [];
+
+      let coins = [];
+
+      /* ==========================================
+         AUDIO
+      ========================================== */
+
+      let audio = null;
+
+      function initAudio() {
+        if (!soundOn) {
+          return;
+        }
+
+        try {
+          if (!audio) {
+            audio = new (window.AudioContext || window.webkitAudioContext)();
+          }
+
+          if (audio.state === "suspended") {
+            audio.resume();
+          }
+        } catch (error) {}
+      }
+
+      function beep(frequency, duration, type = "sine", volume = 0.05) {
+        if (!soundOn) {
+          return;
+        }
+
+        initAudio();
+
+        if (!audio) {
+          return;
+        }
+
+        try {
+          const oscillator = audio.createOscillator();
+
+          const gain = audio.createGain();
+
+          oscillator.type = type;
+
+          oscillator.frequency.value = frequency;
+
+          gain.gain.value = volume;
+
+          oscillator.connect(gain);
+
+          gain.connect(audio.destination);
+
+          oscillator.start();
+
+          gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            audio.currentTime + duration,
+          );
+
+          oscillator.stop(audio.currentTime + duration);
+        } catch (error) {}
+      }
+
+      /* ==========================================
+         SOUND BUTTON
+      ========================================== */
+
+      soundButton.onclick = function () {
+        soundOn = !soundOn;
+
+        soundButton.textContent = soundOn ? "🔊 Sound On" : "🔇 Sound Off";
+
+        if (soundOn) {
+          initAudio();
+
+          beep(700, 0.1);
+        }
+      };
+
+      /* ==========================================
+         PROGRESSION SYSTEM
+      ========================================== */
+
+      function getPlayerXP() {
+        return Number(localStorage.getItem("kidsGameXP")) || 0;
+      }
+
+      function addPlayerXP(amount) {
+        const currentXP = getPlayerXP();
+
+        const newXP = currentXP + amount;
+
+        localStorage.setItem("kidsGameXP", newXP);
+
+        return newXP;
+      }
+
+      function getGamesPlayed() {
+        return Number(localStorage.getItem("kidsGamesPlayed")) || 0;
+      }
+
+      function incrementGamesPlayed() {
+        const gamesPlayed = getGamesPlayed() + 1;
+
+        localStorage.setItem("kidsGamesPlayed", gamesPlayed);
+
+        return gamesPlayed;
+      }
+
+      function getAchievements() {
+        try {
+          return JSON.parse(localStorage.getItem("kidsAchievements")) || [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveAchievements(achievements) {
+        localStorage.setItem("kidsAchievements", JSON.stringify(achievements));
+      }
+
+      function unlockAchievement(achievementId) {
+        const achievements = getAchievements();
+
+        if (achievements.includes(achievementId)) {
+          return false;
+        }
+
+        achievements.push(achievementId);
+
+        saveAchievements(achievements);
+
+        return true;
+      }
+
+      function awardProgression(finalGameScore) {
+        if (progressionAwarded) {
+          return;
+        }
+
+        progressionAwarded = true;
+
+        const xpEarned = 10 + Math.min(finalGameScore, 50);
+
+        const newXP = addPlayerXP(xpEarned);
+
+        const gamesPlayed = incrementGamesPlayed();
+
+        const newAchievements = [];
+
+        if (unlockAchievement("mini_racer_first")) {
+          newAchievements.push("🏎️ Racing Starter!");
+        }
+
+        if (finalGameScore >= 25 && unlockAchievement("mini_racer_25")) {
+          newAchievements.push("⭐ Speed Racer!");
+        }
+
+        if (finalGameScore >= 50 && unlockAchievement("mini_racer_50")) {
+          newAchievements.push("🔥 Racing Master!");
+        }
+
+        if (finalGameScore >= 100 && unlockAchievement("mini_racer_100")) {
+          newAchievements.push("🏆 Racing Legend!");
+        }
+
+        let message = "⭐ +" + xpEarned + " XP";
+
+        if (newAchievements.length > 0) {
+          message += " • " + newAchievements[0];
+        }
+
+        recordMessage.textContent = message;
+
+        console.log("Mini Racer progression updated:", {
+          xp: newXP,
+          gamesPlayed: gamesPlayed,
+          achievements: getAchievements(),
+        });
+      }
+
+      /* ==========================================
+         HUD
+      ========================================== */
+
+      function updateHUD() {
+        scoreEl.textContent = Math.floor(score);
+
+        bestEl.textContent = Math.max(best, Math.floor(score));
+
+        speedEl.textContent = Math.min(10, 1 + Math.floor(score / 10));
+
+        livesEl.textContent =
+          "❤️".repeat(lives) + "🖤".repeat(Math.max(0, 3 - lives));
+      }
+
+      /* ==========================================
+         GAME SPEED
+      ========================================== */
+
+      function getSpeed() {
+        return Math.min(7.5, 3 + score * 0.045);
+      }
+
+      /* ==========================================
+         STATUS
+      ========================================== */
+
+      let statusTimer = null;
+
+      function showStatus(message) {
+        statusEl.textContent = message;
+
+        statusEl.classList.add("show");
+
+        clearTimeout(statusTimer);
+
+        statusTimer = setTimeout(function () {
+          statusEl.classList.remove("show");
+        }, 900);
+      }
+
+      /* ==========================================
+         LANE CONTROL
+      ========================================== */
+
+      function changeLane(direction) {
+        if (!running) {
+          return;
+        }
+
+        const oldLane = targetLane;
+
+        targetLane = Math.max(0, Math.min(2, targetLane + direction));
+
+        if (oldLane !== targetLane) {
+          playerLane = targetLane;
+
+          beep(360, 0.05, "square", 0.025);
+        }
+      }
+
+      /* ==========================================
+         POINTER → LANE
+      ========================================== */
+
+      function chooseLane(clientX) {
+        if (!running) {
+          return;
+        }
+
+        const rect = gameArea.getBoundingClientRect();
+
+        const roadLeft = rect.left + rect.width * 0.2;
+
+        const roadWidth = rect.width * 0.6;
+
+        let ratio = (clientX - roadLeft) / roadWidth;
+
+        ratio = Math.max(0, Math.min(1, ratio));
+
+        targetLane = Math.round(ratio * 2);
+
+        playerLane = targetLane;
+      }
+
+      /* ==========================================
+         POINTER EVENTS
+      ========================================== */
+
+      gameArea.addEventListener("pointerdown", function (event) {
+        if (event.target.closest(".overlay")) {
+          return;
+        }
+
+        chooseLane(event.clientX);
+      });
+
+      gameArea.addEventListener("pointermove", function (event) {
+        if (running && (event.buttons > 0 || event.pointerType === "touch")) {
+          chooseLane(event.clientX);
+        }
+      });
+
+      /* ==========================================
+         KEYBOARD
+      ========================================== */
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+          event.preventDefault();
+
+          changeLane(-1);
+        }
+
+        if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+          event.preventDefault();
+
+          changeLane(1);
+        }
+      });
+
+      /* ==========================================
+         PLAYER MOVEMENT
+      ========================================== */
+
+      function updatePlayer(delta) {
+        const destination = lanes[targetLane];
+
+        playerX += (destination - playerX) * 0.18 * Math.min(2, delta / 16.67);
+
+        playerX = Math.max(30, Math.min(70, playerX));
+
+        player.style.left = playerX + "%";
+      }
+
+      /* ==========================================
+         FAIR TRAFFIC CHECK
+      ========================================== */
+
+      function canSpawnTraffic() {
+        const nearbyCars = traffic.filter(function (car) {
+          return car.y > -100 && car.y < 150;
+        });
+
+        if (nearbyCars.length >= 2) {
+          return false;
+        }
+
+        return true;
+      }
+
+      /* ==========================================
+         FIND FAIR LANE
+      ========================================== */
+
+      function getAvailableTrafficLane() {
+        const available = [];
+
+        for (let lane = 0; lane < 3; lane++) {
+          const tooClose = traffic.some(function (car) {
+            return car.lane === lane && Math.abs(car.y + 90) < 155;
+          });
+
+          if (!tooClose) {
+            available.push(lane);
+          }
+        }
+
+        if (available.length === 0) {
+          return -1;
+        }
+
+        return available[Math.floor(Math.random() * available.length)];
+      }
+
+      /* ==========================================
+         CREATE TRAFFIC
+      ========================================== */
+
+      function createTraffic() {
+        if (!canSpawnTraffic()) {
+          return;
+        }
+
+        const lane = getAvailableTrafficLane();
+
+        if (lane === -1) {
+          return;
+        }
+
+        const types = ["normal", "suv", "sports", "taxi", "police", "truck"];
+
+        const type = types[Math.floor(Math.random() * types.length)];
+
+        const element = document.createElement("div");
+
+        element.className = "traffic " + type;
+
+        element.innerHTML = `
+          <div class="traffic-wheel tw1"></div>
+          <div class="traffic-wheel tw2"></div>
+          <div class="traffic-wheel tw3"></div>
+          <div class="traffic-wheel tw4"></div>
+
+          <div class="traffic-body">
+            <div class="traffic-front-light left"></div>
+            <div class="traffic-front-light right"></div>
+            <div class="traffic-window"></div>
+          </div>
+        `;
+
+        element.style.left = lanes[lane] + "%";
+
+        element.style.top = "-90px";
+
+        gameArea.appendChild(element);
+
+        traffic.push({
+          element: element,
+
+          lane: lane,
+
+          y: -90,
+
+          speed: 0.72 + Math.random() * 0.48,
+
+          counted: false,
+        });
+      }
+
+      /* ==========================================
+         CREATE COIN
+      ========================================== */
+
+      function createCoin() {
+        const lane = Math.floor(Math.random() * 3);
+
+        const element = document.createElement("div");
+
+        element.className = "coin";
+
+        element.textContent = "🪙";
+
+        element.style.left = lanes[lane] + "%";
+
+        element.style.top = "-40px";
+
+        gameArea.appendChild(element);
+
+        coins.push({
+          element: element,
+
+          lane: lane,
+
+          y: -40,
+        });
+      }
+
+      /* ==========================================
+         LANE COLLISION
+      ========================================== */
+
+      function sameLane(lane) {
+        return Math.abs(playerX - lanes[lane]) < 8;
+      }
+
+      /* ==========================================
+         VERTICAL COLLISION
+      ========================================== */
+
+      function verticalCollision(y, height) {
+        const areaHeight = gameArea.clientHeight;
+
+        const playerTop = areaHeight - 100;
+
+        const playerBottom = areaHeight - 20;
+
+        const objectTop = y;
+
+        const objectBottom = y + height;
+
+        return objectBottom > playerTop && objectTop < playerBottom;
+      }
+
+      /* ==========================================
+         PLAYER HIT
+      ========================================== */
+
+      function hitPlayer() {
+        if (Date.now() < invulnerableUntil) {
+          return;
+        }
+
+        lives--;
+
+        invulnerableUntil = Date.now() + 1300;
+
+        player.style.opacity = ".35";
+
+        setTimeout(function () {
+          player.style.opacity = "1";
+        }, 1300);
+
+        beep(120, 0.25, "sawtooth", 0.09);
+
+        showStatus("💥 CRASH!");
+
+        updateHUD();
+
+        if (lives <= 0) {
+          endGame();
+        }
+      }
+
+      /* ==========================================
+         TRAFFIC UPDATE
+      ========================================== */
+
+      function updateTraffic(delta, speed) {
+        for (let i = traffic.length - 1; i >= 0; i--) {
+          const car = traffic[i];
+
+          car.y += (speed * car.speed * delta) / 16.67;
+
+          car.element.style.top = car.y + "px";
+
+          if (sameLane(car.lane) && verticalCollision(car.y, 65)) {
+            car.element.remove();
+
+            traffic.splice(i, 1);
+
+            hitPlayer();
+
+            continue;
+          }
+
+          if (!car.counted && car.y > gameArea.clientHeight) {
+            car.counted = true;
+
+            score += 2;
+
+            showScore("+2", car.lane);
+
+            updateHUD();
+          }
+
+          if (car.y > gameArea.clientHeight + 100) {
+            car.element.remove();
+
+            traffic.splice(i, 1);
+          }
+        }
+      }
+
+      /* ==========================================
+         COIN UPDATE
+      ========================================== */
+
+      function updateCoins(delta, speed) {
+        for (let i = coins.length - 1; i >= 0; i--) {
+          const coin = coins[i];
+
+          coin.y += (speed * 0.9 * delta) / 16.67;
+
+          coin.element.style.top = coin.y + "px";
+
+          if (sameLane(coin.lane) && verticalCollision(coin.y, 28)) {
+            score += 5;
+
+            showScore("+5 🪙", coin.lane);
+
+            beep(850, 0.1, "sine", 0.07);
+
+            coin.element.remove();
+
+            coins.splice(i, 1);
+
+            updateHUD();
+
+            continue;
+          }
+
+          if (coin.y > gameArea.clientHeight + 50) {
+            coin.element.remove();
+
+            coins.splice(i, 1);
+          }
+        }
+      }
+
+      /* ==========================================
+         SCORE POPUP
+      ========================================== */
+
+      function showScore(text, lane) {
+        const element = document.createElement("div");
+
+        element.className = "score-pop";
+
+        element.textContent = text;
+
+        element.style.left = lanes[lane] + "%";
+
+        element.style.top = gameArea.clientHeight - 110 + "px";
+
+        gameArea.appendChild(element);
+
+        setTimeout(function () {
+          element.remove();
+        }, 750);
+      }
+
+      /* ==========================================
+         ROAD SCROLL
+      ========================================== */
+
+      function updateRoad(delta, speed) {
+        roadOffset += (speed * delta) / 16.67;
+
+        const offset = roadOffset % 68;
+
+        document.querySelectorAll(".lane-divider").forEach(function (line) {
+          line.style.transform = "translateY(" + offset + "px)";
+        });
+      }
+
+      /* ==========================================
+         SPAWN OBJECTS
+      ========================================== */
+
+      function spawnObjects(delta) {
+        trafficTimer += delta;
+
+        const trafficDelay = Math.max(600, 1050 - score * 5);
+
+        if (trafficTimer >= trafficDelay) {
+          trafficTimer = 0;
+
+          createTraffic();
+        }
+
+        coinTimer += delta;
+
+        if (coinTimer >= 850) {
+          coinTimer = 0;
+
+          if (Math.random() < 0.75) {
+            createCoin();
+          }
+        }
+      }
+
+      /* ==========================================
+         MAIN GAME LOOP
+      ========================================== */
+
+      function gameLoop(timestamp) {
+        if (!running) {
+          return;
+        }
+
+        if (!lastTime) {
+          lastTime = timestamp;
+        }
+
+        const delta = Math.min(40, timestamp - lastTime);
+
+        lastTime = timestamp;
+
+        updatePlayer(delta);
+
+        const speed = getSpeed();
+
+        updateRoad(delta, speed);
+
+        updateTraffic(delta, speed);
+
+        if (!running) {
+          return;
+        }
+
+        updateCoins(delta, speed);
+
+        spawnObjects(delta);
+
+        score += delta * 0.0025;
+
+        updateHUD();
+
+        animation = requestAnimationFrame(gameLoop);
+      }
+
+      /* ==========================================
+         CLEAR OBJECTS
+      ========================================== */
+
+      function clearObjects() {
+        traffic.forEach(function (car) {
+          car.element.remove();
+        });
+
+        coins.forEach(function (coin) {
+          coin.element.remove();
+        });
+
+        traffic = [];
+
+        coins = [];
+
+        document.querySelectorAll(".score-pop").forEach(function (element) {
+          element.remove();
+        });
+      }
+
+      /* ==========================================
+         START GAME
+      ========================================== */
+
+      function startGame() {
+        initAudio();
+
+        cancelAnimationFrame(animation);
+
+        clearObjects();
+
+        score = 0;
+
+        lives = 3;
+
+        lastTime = 0;
+
+        trafficTimer = 0;
+
+        coinTimer = 0;
+
+        roadOffset = 0;
+
+        invulnerableUntil = 0;
+
+        progressionAwarded = false;
+
+        playerLane = 1;
+
+        targetLane = 1;
+
+        playerX = 50;
+
+        player.style.left = "50%";
+
+        player.style.transform = "translateX(-50%)";
+
+        player.style.opacity = "1";
+
+        updateHUD();
+
+        overlay.classList.add("hidden");
+
+        running = true;
+
+        showStatus("🏁 GO!");
+
+        beep(600, 0.1, "square", 0.05);
+
+        animation = requestAnimationFrame(gameLoop);
+      }
+
+      /* ==========================================
+         END GAME
+      ========================================== */
+
+      function endGame() {
+        if (!running) {
+          return;
+        }
+
+        running = false;
+
+        cancelAnimationFrame(animation);
+
+        const finalScore = Math.floor(score);
+
+        const oldBest = Number(localStorage.getItem("miniRacerBest")) || 0;
+
+        const newRecord = finalScore > oldBest;
+
+        if (newRecord) {
+          best = finalScore;
+
+          localStorage.setItem("miniRacerBest", finalScore);
+
+          trophy.textContent = "🏆";
+
+          overlaySmall.textContent = "NEW RECORD!";
+
+          overlayTitle.textContent = "AMAZING RACE!";
+
+          recordMessage.textContent = "🎉 New best score!";
+
+          beep(1000, 0.15, "sine", 0.08);
+
+          setTimeout(function () {
+            beep(1300, 0.2, "sine", 0.08);
+          }, 150);
+        } else {
+          best = oldBest;
+
+          trophy.textContent = "🏎️";
+
+          overlaySmall.textContent = "RACE OVER";
+
+          overlayTitle.textContent = "GOOD DRIVE!";
+
+          recordMessage.textContent = "🏁 Best score: " + best;
+        }
+
+        /*
+          Award shared progression
+          after the final score is known.
+
+          This does not affect the
+          existing Mini Racer score.
+        */
+
+        awardProgression(finalScore);
+
+        /*
+          Keep new-record information
+          visible together with progression.
+        */
+
+        if (newRecord) {
+          const progressionText = recordMessage.textContent;
+
+          recordMessage.textContent = "🎉 New best score! • " + progressionText;
+        }
+
+        finalScoreEl.textContent = finalScore;
+
+        startButton.textContent = "🚀 RACE AGAIN";
+
+        overlay.classList.remove("hidden");
+
+        updateHUD();
+      }
+
+      /* ==========================================
+         BUTTONS
+      ========================================== */
+
+      startButton.onclick = function () {
+        startGame();
+      };
+
+      restartButton.onclick = function () {
+        startGame();
+      };
+
+      closeButton.onclick = function () {
+        running = false;
+
+        cancelAnimationFrame(animation);
+
+        clearObjects();
+
+        overlay.classList.add("hidden");
+
+        playerLane = 1;
+
+        targetLane = 1;
+
+        playerX = 50;
+
+        player.style.left = "50%";
+
+        player.style.transform = "translateX(-50%)";
+
+        player.style.opacity = "1";
+      };
+
+      /* ==========================================
+         INITIAL HUD
+      ========================================== */
+
+      updateHUD();
+    </script>
+  </body>
+</html>

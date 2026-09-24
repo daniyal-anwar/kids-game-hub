@@ -1,0 +1,1254 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Don't Touch Red | Kids Game Hub</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        min-height: 100vh;
+        color: white;
+
+        background:
+          radial-gradient(circle at top left, #27245a, transparent 38%),
+          radial-gradient(circle at bottom right, #211d4c, transparent 40%),
+          #0b0b1b;
+      }
+
+      /* =========================
+         NAVBAR
+      ========================= */
+
+      nav {
+        height: 58px;
+
+        display: flex;
+        align-items: center;
+
+        padding: 0 5%;
+
+        background: rgba(11, 11, 27, 0.88);
+
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+
+        border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .logo-icon {
+        width: 32px;
+        height: 32px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 9px;
+
+        background: linear-gradient(135deg, #8175e8, #5b51c8);
+
+        box-shadow: 0 0 14px rgba(129, 117, 232, 0.5);
+      }
+
+      /* =========================
+         PAGE
+      ========================= */
+
+      .page {
+        width: min(800px, 92%);
+
+        margin: auto;
+
+        padding: 20px 0 25px;
+      }
+
+      /* =========================
+         HEADER
+      ========================= */
+
+      .game-header {
+        text-align: center;
+
+        margin-bottom: 14px;
+      }
+
+      .eyebrow {
+        display: inline-block;
+
+        padding: 5px 11px;
+
+        border-radius: 999px;
+
+        color: #bdb8ff;
+
+        background: rgba(129, 117, 232, 0.12);
+
+        border: 1px solid rgba(129, 117, 232, 0.25);
+
+        font-size: 10px;
+        font-weight: 800;
+
+        letter-spacing: 1px;
+
+        margin-bottom: 7px;
+      }
+
+      h1 {
+        font-size: clamp(27px, 4vw, 38px);
+
+        line-height: 1;
+
+        background: linear-gradient(90deg, white, #bdb8ff, #8175e8);
+
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .subtitle {
+        margin-top: 6px;
+
+        color: #aaa8c5;
+
+        font-size: 13px;
+      }
+
+      #playerGreeting {
+        margin-top: 5px;
+
+        color: #8fc7ff;
+
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      /* =========================
+         HUD
+      ========================= */
+
+      .hud {
+        display: grid;
+
+        grid-template-columns: repeat(3, 1fr);
+
+        gap: 9px;
+
+        margin-bottom: 12px;
+      }
+
+      .hud-card {
+        padding: 9px;
+
+        text-align: center;
+
+        border-radius: 11px;
+
+        background: rgba(20, 19, 48, 0.9);
+
+        border: 1px solid rgba(255, 255, 255, 0.07);
+      }
+
+      .hud-label {
+        display: block;
+
+        color: #85829c;
+
+        font-size: 9px;
+        font-weight: 800;
+
+        letter-spacing: 1px;
+      }
+
+      .hud-value {
+        display: block;
+
+        margin-top: 3px;
+
+        font-size: 20px;
+        font-weight: 900;
+      }
+
+      /* =========================
+         GAME CARD
+      ========================= */
+
+      .game-card {
+        padding: 12px;
+
+        border-radius: 18px;
+
+        background: rgba(25, 24, 55, 0.95);
+
+        border: 1px solid rgba(129, 117, 232, 0.16);
+
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.3);
+      }
+
+      /* =========================
+         GAME AREA
+      ========================= */
+
+      #gameArea {
+        position: relative;
+
+        height: 330px;
+
+        overflow: hidden;
+
+        border-radius: 13px;
+
+        background:
+          linear-gradient(rgba(129, 117, 232, 0.035) 1px, transparent 1px),
+          linear-gradient(
+            90deg,
+            rgba(129, 117, 232, 0.035) 1px,
+            transparent 1px
+          ),
+          radial-gradient(
+            circle at center,
+            rgba(108, 99, 217, 0.08),
+            transparent 65%
+          ),
+          #0b0b21;
+
+        background-size:
+          30px 30px,
+          30px 30px,
+          auto;
+
+        border: 1px solid rgba(255, 255, 255, 0.05);
+
+        touch-action: none;
+      }
+
+      /* =========================
+         PLAYER
+      ========================= */
+
+      #player {
+        position: absolute;
+
+        bottom: 45px;
+
+        left: 50%;
+
+        width: 45px;
+        height: 45px;
+
+        transform: translateX(-50%);
+
+        border-radius: 50%;
+
+        background: radial-gradient(
+          circle at 35% 30%,
+          #d6d2ff,
+          #8175e8 45%,
+          #5b51c8 100%
+        );
+
+        border: 2px solid rgba(255, 255, 255, 0.85);
+
+        box-shadow:
+          0 0 13px rgba(129, 117, 232, 0.9),
+          0 0 28px rgba(108, 99, 217, 0.5);
+
+        z-index: 10;
+
+        transition: none;
+
+        will-change: left;
+      }
+
+      /* =========================
+         RED OBSTACLES
+      ========================= */
+
+      .obstacle {
+        position: absolute;
+
+        width: 38px;
+        height: 38px;
+
+        border-radius: 9px;
+
+        background: linear-gradient(135deg, #ff6b73, #d93643);
+
+        border: 2px solid rgba(255, 255, 255, 0.65);
+
+        box-shadow: 0 0 12px rgba(255, 70, 80, 0.7);
+
+        z-index: 5;
+      }
+
+      /* =========================
+         GAME OVER OVERLAY
+      ========================= */
+
+      .overlay {
+        position: absolute;
+
+        inset: 0;
+
+        z-index: 20;
+
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+
+        text-align: center;
+
+        background: rgba(8, 8, 22, 0.88);
+
+        backdrop-filter: blur(6px);
+
+        -webkit-backdrop-filter: blur(6px);
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      .overlay-box {
+        width: 90%;
+
+        max-width: 350px;
+      }
+
+      .overlay-icon {
+        font-size: 40px;
+
+        margin-bottom: 5px;
+      }
+
+      .overlay h2 {
+        font-size: 25px;
+
+        margin-bottom: 6px;
+      }
+
+      .overlay p {
+        color: #aaa8c5;
+
+        font-size: 13px;
+
+        line-height: 1.5;
+
+        margin-bottom: 13px;
+      }
+
+      .overlay p strong {
+        color: white;
+      }
+
+      .start-btn {
+        background: linear-gradient(135deg, #8175e8, #5b51c8);
+
+        box-shadow: 0 0 20px rgba(129, 117, 232, 0.25);
+      }
+
+      /* =========================
+         CONTROLS
+      ========================= */
+
+      .controls {
+        display: flex;
+
+        justify-content: center;
+
+        gap: 8px;
+
+        margin-top: 10px;
+      }
+
+      button {
+        border: none;
+
+        cursor: pointer;
+
+        color: white;
+
+        font-family: inherit;
+
+        font-size: 12px;
+        font-weight: 800;
+
+        padding: 10px 16px;
+
+        border-radius: 10px;
+
+        transition: transform 0.15s ease;
+      }
+
+      button:hover {
+        transform: translateY(-2px);
+      }
+
+      #soundBtn {
+        background: linear-gradient(135deg, #4c91df, #3475be);
+      }
+
+      #restartBtn {
+        background: linear-gradient(135deg, #55c88a, #38a96f);
+      }
+
+      /* =========================
+         PROGRESS NOTIFICATION
+      ========================= */
+
+      #progressMessage {
+        position: absolute;
+
+        left: 50%;
+
+        bottom: 18px;
+
+        z-index: 30;
+
+        transform: translateX(-50%) translateY(10px);
+
+        width: max-content;
+
+        max-width: 90%;
+
+        padding: 9px 14px;
+
+        border-radius: 10px;
+
+        color: white;
+
+        background: rgba(25, 23, 59, 0.96);
+
+        border: 1px solid rgba(129, 117, 232, 0.45);
+
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+
+        font-size: 11px;
+
+        font-weight: 800;
+
+        opacity: 0;
+
+        pointer-events: none;
+
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s ease;
+      }
+
+      #progressMessage.show {
+        opacity: 1;
+
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* =========================
+         INSTRUCTIONS
+      ========================= */
+
+      .instructions {
+        margin-top: 10px;
+
+        padding: 10px 14px;
+
+        text-align: center;
+
+        color: #aaa8c5;
+
+        font-size: 11px;
+
+        line-height: 1.5;
+
+        border-radius: 11px;
+
+        background: rgba(20, 19, 48, 0.75);
+
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .instructions strong {
+        color: white;
+      }
+
+      /* =========================
+         BACK TO GAMES
+      ========================= */
+
+      .back-to-games {
+        display: block;
+
+        width: fit-content;
+
+        margin: 10px auto 0;
+
+        padding: 9px 15px;
+
+        border-radius: 9px;
+
+        color: #cfcdf4;
+
+        text-decoration: none;
+
+        font-size: 11px;
+
+        font-weight: 800;
+
+        background: rgba(255, 255, 255, 0.04);
+
+        border: 1px solid rgba(255, 255, 255, 0.07);
+
+        transition: 0.2s ease;
+      }
+
+      .back-to-games:hover {
+        color: white;
+
+        background: rgba(129, 117, 232, 0.18);
+
+        border-color: rgba(129, 117, 232, 0.4);
+
+        transform: translateY(-2px);
+      }
+
+      /* =========================
+         FOOTER
+      ========================= */
+
+      footer {
+        text-align: center;
+
+        padding: 13px;
+
+        color: #6f6c85;
+
+        font-size: 10px;
+
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      /* =========================
+         MOBILE
+      ========================= */
+
+      @media (max-width: 600px) {
+        .page {
+          width: 94%;
+
+          padding-top: 16px;
+        }
+
+        #gameArea {
+          height: 330px;
+        }
+
+        .controls {
+          flex-wrap: wrap;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- =========================
+         NAVBAR
+    ========================= -->
+
+    <nav>
+      <div class="logo">
+        <div class="logo-icon">🎮</div>
+
+        Kids Game Hub
+      </div>
+    </nav>
+
+    <!-- =========================
+         MAIN
+    ========================= -->
+
+    <main class="page">
+      <header class="game-header">
+        <div class="eyebrow">🔴 SURVIVAL CHALLENGE</div>
+
+        <h1>DON'T TOUCH RED</h1>
+
+        <p class="subtitle">Dodge the red obstacles!</p>
+
+        <div id="playerGreeting">🎮 Good luck, Player!</div>
+      </header>
+
+      <!-- =========================
+           HUD
+      ========================= -->
+
+      <section class="hud">
+        <div class="hud-card">
+          <span class="hud-label"> SCORE </span>
+
+          <span class="hud-value" id="score"> 0 </span>
+        </div>
+
+        <div class="hud-card">
+          <span class="hud-label"> LIVES </span>
+
+          <span class="hud-value" id="lives"> ❤️❤️❤️ </span>
+        </div>
+
+        <div class="hud-card">
+          <span class="hud-label"> BEST </span>
+
+          <span class="hud-value" id="bestScore"> 0 </span>
+        </div>
+      </section>
+
+      <!-- =========================
+           GAME
+      ========================= -->
+
+      <section class="game-card">
+        <div id="gameArea">
+          <div id="player"></div>
+
+          <div id="progressMessage"></div>
+
+          <!-- START / GAME OVER -->
+
+          <div class="overlay" id="overlay">
+            <div class="overlay-box">
+              <div class="overlay-icon" id="overlayIcon">🔴</div>
+
+              <h2 id="overlayTitle">Ready?</h2>
+
+              <p id="overlayText">
+                Move left and right. Don't touch the red blocks!
+              </p>
+
+              <button class="start-btn" id="startBtn">🚀 START GAME</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- CONTROLS -->
+
+        <div class="controls">
+          <button id="soundBtn">🔊 Sound On</button>
+
+          <button id="restartBtn">🔄 Restart</button>
+        </div>
+      </section>
+
+      <!-- =========================
+           INSTRUCTIONS
+      ========================= -->
+
+      <div class="instructions">
+        <strong>How to play:</strong>
+
+        Move the purple ball left and right using your mouse, touch or arrow
+        keys. Avoid the red obstacles and survive as long as possible!
+      </div>
+
+      <!-- =========================
+           BACK
+      ========================= -->
+
+      <a href="../index.html#games" class="back-to-games"> ← Back to Games </a>
+    </main>
+
+    <!-- =========================
+         FOOTER
+    ========================= -->
+
+    <footer>🎮 Kids Game Hub &nbsp;•&nbsp; Play. Learn. Have Fun! 🚀</footer>
+
+    <script>
+      /* =========================
+         PLAYER
+      ========================= */
+
+      const playerName = localStorage.getItem("kidsGamePlayerName") || "Player";
+
+      document.getElementById("playerGreeting").textContent =
+        `🎮 Good luck, ${playerName}!`;
+
+      /* =========================
+         ELEMENTS
+      ========================= */
+
+      const player = document.getElementById("player");
+
+      const gameArea = document.getElementById("gameArea");
+
+      const scoreDisplay = document.getElementById("score");
+
+      const livesDisplay = document.getElementById("lives");
+
+      const bestDisplay = document.getElementById("bestScore");
+
+      const overlay = document.getElementById("overlay");
+
+      const overlayIcon = document.getElementById("overlayIcon");
+
+      const overlayTitle = document.getElementById("overlayTitle");
+
+      const overlayText = document.getElementById("overlayText");
+
+      const startBtn = document.getElementById("startBtn");
+
+      const restartBtn = document.getElementById("restartBtn");
+
+      const soundBtn = document.getElementById("soundBtn");
+
+      const progressMessage = document.getElementById("progressMessage");
+
+      /* =========================
+         GAME VARIABLES
+      ========================= */
+
+      let score = 0;
+
+      let lives = 3;
+
+      let playerX = 60;
+
+      let gameRunning = false;
+
+      let soundEnabled = true;
+
+      let spawnTimer = null;
+
+      let audioContext = null;
+
+      let recordBrokenThisGame = false;
+
+      /* =========================
+         BEST SCORE
+      ========================= */
+
+      let bestScore = Number(localStorage.getItem("dontTouchRedBest")) || 0;
+
+      bestDisplay.textContent = bestScore;
+
+      /* =========================
+         SOUND
+      ========================= */
+
+      function playSound(frequency, duration, type = "sine", volume = 0.07) {
+        if (!soundEnabled) {
+          return;
+        }
+
+        if (!audioContext) {
+          audioContext = new (
+            window.AudioContext || window.webkitAudioContext
+          )();
+        }
+
+        if (audioContext.state === "suspended") {
+          audioContext.resume();
+        }
+
+        const oscillator = audioContext.createOscillator();
+
+        const gain = audioContext.createGain();
+
+        oscillator.type = type;
+
+        oscillator.frequency.value = frequency;
+
+        gain.gain.setValueAtTime(volume, audioContext.currentTime);
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          audioContext.currentTime + duration,
+        );
+
+        oscillator.connect(gain);
+
+        gain.connect(audioContext.destination);
+
+        oscillator.start();
+
+        oscillator.stop(audioContext.currentTime + duration);
+      }
+
+      /* =========================
+         LIVES
+      ========================= */
+
+      function updateLives() {
+        livesDisplay.textContent = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
+      }
+
+      /* =========================
+         MOVE PLAYER
+      ========================= */
+
+      function movePlayer(percentage) {
+        playerX = Math.max(5, Math.min(95, percentage));
+
+        player.style.left = playerX + "%";
+      }
+
+      /* =========================
+         MOUSE CONTROL
+      ========================= */
+
+      gameArea.addEventListener("mousemove", function (event) {
+        if (!gameRunning) {
+          return;
+        }
+
+        const rect = gameArea.getBoundingClientRect();
+
+        const percentage = ((event.clientX - rect.left) / rect.width) * 100;
+
+        movePlayer(percentage);
+      });
+
+      /* =========================
+         TOUCH CONTROL
+      ========================= */
+
+      gameArea.addEventListener(
+        "touchmove",
+        function (event) {
+          if (!gameRunning) {
+            return;
+          }
+
+          event.preventDefault();
+
+          const touch = event.touches[0];
+
+          const rect = gameArea.getBoundingClientRect();
+
+          const percentage = ((touch.clientX - rect.left) / rect.width) * 100;
+
+          movePlayer(percentage);
+        },
+        {
+          passive: false,
+        },
+      );
+
+      /* =========================
+         KEYBOARD CONTROL
+      ========================= */
+
+      document.addEventListener("keydown", function (event) {
+        if (!gameRunning) {
+          return;
+        }
+
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+
+          movePlayer(playerX - 8);
+        }
+
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+
+          movePlayer(playerX + 8);
+        }
+      });
+
+      /* =========================
+         PROGRESSION SYSTEM
+      ========================= */
+
+      function getPlayerXP() {
+        return Number(localStorage.getItem("kidsGameXP")) || 0;
+      }
+
+      function addPlayerXP(amount) {
+        const currentXP = getPlayerXP();
+
+        const newXP = currentXP + amount;
+
+        localStorage.setItem("kidsGameXP", newXP);
+
+        return newXP;
+      }
+
+      function getGamesPlayed() {
+        return Number(localStorage.getItem("kidsGamesPlayed")) || 0;
+      }
+
+      function incrementGamesPlayed() {
+        const gamesPlayed = getGamesPlayed() + 1;
+
+        localStorage.setItem("kidsGamesPlayed", gamesPlayed);
+
+        return gamesPlayed;
+      }
+
+      function getAchievements() {
+        try {
+          return JSON.parse(localStorage.getItem("kidsAchievements")) || [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveAchievements(achievements) {
+        localStorage.setItem("kidsAchievements", JSON.stringify(achievements));
+      }
+
+      function unlockAchievement(achievementId) {
+        const achievements = getAchievements();
+
+        if (achievements.includes(achievementId)) {
+          return false;
+        }
+
+        achievements.push(achievementId);
+
+        saveAchievements(achievements);
+
+        return true;
+      }
+
+      function showProgressMessage(message) {
+        progressMessage.textContent = message;
+
+        progressMessage.classList.add("show");
+
+        setTimeout(function () {
+          progressMessage.classList.remove("show");
+        }, 2200);
+      }
+
+      function awardProgression(finalScore) {
+        /*
+          Every completed game:
+          10 base XP + score XP
+        */
+
+        const xpEarned = 10 + Math.min(finalScore, 50);
+
+        const newXP = addPlayerXP(xpEarned);
+
+        const gamesPlayed = incrementGamesPlayed();
+
+        let newAchievements = [];
+
+        /*
+          FIRST GAME
+        */
+
+        if (unlockAchievement("first_game")) {
+          newAchievements.push("🎮 First Game!");
+        }
+
+        /*
+          SCORE 10
+        */
+
+        if (finalScore >= 10 && unlockAchievement("dont_touch_red_10")) {
+          newAchievements.push("⭐ Red Dodger!");
+        }
+
+        /*
+          SCORE 25
+        */
+
+        if (finalScore >= 25 && unlockAchievement("dont_touch_red_25")) {
+          newAchievements.push("🔥 Red Master!");
+        }
+
+        /*
+          SCORE 50
+        */
+
+        if (finalScore >= 50 && unlockAchievement("dont_touch_red_50")) {
+          newAchievements.push("🏆 Red Legend!");
+        }
+
+        /*
+          SHOW XP
+        */
+
+        let message = `⭐ +${xpEarned} XP`;
+
+        if (newAchievements.length > 0) {
+          message += ` • ${newAchievements[0]}`;
+        }
+
+        showProgressMessage(message);
+
+        /*
+          Keep values available
+          for future progression.
+        */
+
+        console.log("Progression updated:", {
+          xp: newXP,
+          gamesPlayed: gamesPlayed,
+          achievements: getAchievements(),
+        });
+      }
+
+      /* =========================
+         CREATE OBSTACLE
+      ========================= */
+
+      function createObstacle() {
+        if (!gameRunning) {
+          return;
+        }
+
+        const obstacle = document.createElement("div");
+
+        obstacle.className = "obstacle";
+
+        obstacle.style.left = Math.random() * 100 + "%";
+
+        obstacle.style.top = "-45px";
+
+        gameArea.appendChild(obstacle);
+
+        let top = -45;
+
+        /*
+          Increasing speed
+        */
+
+        const speed = 8.5 + score * 0.14;
+
+        const fall = setInterval(function () {
+          if (!gameRunning) {
+            clearInterval(fall);
+
+            obstacle.remove();
+
+            return;
+          }
+
+          top += speed;
+
+          obstacle.style.top = top + "px";
+
+          /* =========================
+                 COLLISION
+              ========================= */
+
+          const playerRect = player.getBoundingClientRect();
+
+          const obstacleRect = obstacle.getBoundingClientRect();
+
+          if (
+            playerRect.left < obstacleRect.right &&
+            playerRect.right > obstacleRect.left &&
+            playerRect.top < obstacleRect.bottom &&
+            playerRect.bottom > obstacleRect.top
+          ) {
+            clearInterval(fall);
+
+            obstacle.remove();
+
+            lives--;
+
+            updateLives();
+
+            playSound(180, 0.18, "square", 0.08);
+
+            if (lives <= 0) {
+              endGame();
+            }
+
+            return;
+          }
+
+          /* =========================
+                 OBSTACLE PASSED
+              ========================= */
+
+          if (top > gameArea.clientHeight) {
+            clearInterval(fall);
+
+            obstacle.remove();
+
+            score++;
+
+            scoreDisplay.textContent = score;
+
+            /*
+                  New record indicator
+                */
+
+            if (score > bestScore) {
+              bestScore = score;
+
+              bestDisplay.textContent = bestScore;
+
+              recordBrokenThisGame = true;
+            }
+
+            playSound(650, 0.07, "sine", 0.05);
+          }
+        }, 16);
+      }
+
+      /* =========================
+         START GAME
+      ========================= */
+
+      function startGame() {
+        clearInterval(spawnTimer);
+
+        document.querySelectorAll(".obstacle").forEach(function (obstacle) {
+          obstacle.remove();
+        });
+
+        score = 0;
+
+        lives = 3;
+
+        playerX = 50;
+
+        recordBrokenThisGame = false;
+
+        scoreDisplay.textContent = "0";
+
+        updateLives();
+
+        movePlayer(50);
+
+        gameRunning = true;
+
+        overlay.classList.add("hidden");
+
+        progressMessage.classList.remove("show");
+
+        /*
+          Faster obstacle spawning.
+        */
+
+        spawnTimer = setInterval(createObstacle, 300);
+
+        /*
+          Immediate challenge
+        */
+
+        createObstacle();
+
+        playSound(520, 0.1, "sine", 0.05);
+      }
+
+      /* =========================
+         END GAME
+      ========================= */
+
+      function endGame() {
+        if (!gameRunning) {
+          return;
+        }
+
+        gameRunning = false;
+
+        clearInterval(spawnTimer);
+
+        document.querySelectorAll(".obstacle").forEach(function (obstacle) {
+          obstacle.remove();
+        });
+
+        /*
+          Save high score
+        */
+
+        const oldBest = Number(localStorage.getItem("dontTouchRedBest")) || 0;
+
+        if (score > oldBest) {
+          bestScore = score;
+
+          localStorage.setItem("dontTouchRedBest", score);
+
+          bestDisplay.textContent = score;
+
+          recordBrokenThisGame = true;
+        }
+
+        /*
+          =========================
+          PLAYER PROGRESSION
+          =========================
+
+          XP and achievements are
+          awarded only once because
+          endGame() exits immediately
+          when the game isn't running.
+        */
+
+        awardProgression(score);
+
+        /* =========================
+           GAME OVER SCREEN
+        ========================= */
+
+        overlayIcon.textContent = recordBrokenThisGame ? "🏆" : "💥";
+
+        overlayTitle.textContent = "Game Over!";
+
+        if (recordBrokenThisGame) {
+          overlayText.innerHTML = `⭐ <strong>NEW RECORD!</strong><br>Your score: <strong>${score}</strong>`;
+        } else {
+          overlayText.innerHTML = `Your score: <strong>${score}</strong><br>Try again and beat your record!`;
+        }
+
+        startBtn.textContent = "🔄 PLAY AGAIN";
+
+        overlay.classList.remove("hidden");
+
+        /*
+          Game over sound
+        */
+
+        playSound(150, 0.4, "sawtooth", 0.06);
+      }
+
+      /* =========================
+         SOUND BUTTON
+      ========================= */
+
+      soundBtn.addEventListener("click", function () {
+        soundEnabled = !soundEnabled;
+
+        soundBtn.textContent = soundEnabled ? "🔊 Sound On" : "🔇 Sound Off";
+      });
+
+      /* =========================
+         BUTTONS
+      ========================= */
+
+      startBtn.addEventListener("click", startGame);
+
+      restartBtn.addEventListener("click", startGame);
+
+      /* =========================
+         INITIAL STATE
+      ========================= */
+
+      updateLives();
+
+      movePlayer(50);
+    </script>
+  </body>
+</html>

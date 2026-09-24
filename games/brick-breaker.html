@@ -1,0 +1,1350 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Brick Breaker | Kids Game Hub</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        color: white;
+        background: radial-gradient(
+          circle at top,
+          #27245a 0%,
+          #15142f 45%,
+          #0b0b1b 100%
+        );
+      }
+
+      .page {
+        width: min(800px, 92%);
+        margin: auto;
+        padding: 20px 0 25px;
+      }
+
+      .top {
+        text-align: center;
+        margin-bottom: 14px;
+      }
+
+      .game-label {
+        color: #74b9ff;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+      }
+
+      h1 {
+        font-size: clamp(28px, 5vw, 42px);
+        font-weight: 900;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .greeting {
+        margin-top: 5px;
+        color: #c9c7df;
+        font-size: 14px;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .hud-box {
+        background: rgba(20, 19, 50, 0.9);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 14px;
+        padding: 8px;
+        text-align: center;
+      }
+
+      .hud-label {
+        color: #aaa8c5;
+        font-size: 9px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      .hud-value {
+        margin-top: 3px;
+        font-size: 20px;
+        font-weight: 900;
+      }
+
+      .game-card {
+        position: relative;
+        background: rgba(15, 15, 38, 0.94);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 22px;
+        padding: 12px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.35),
+          0 0 30px rgba(108, 99, 217, 0.08);
+      }
+
+      #gameArea {
+        position: relative;
+        height: 360px;
+        overflow: hidden;
+        border-radius: 17px;
+        background: radial-gradient(
+          circle at center,
+          #222052 0%,
+          #12112d 60%,
+          #0b0b1b 100%
+        );
+        border: 1px solid rgba(116, 185, 255, 0.2);
+        touch-action: none;
+      }
+
+      /* BRICKS */
+
+      .brick {
+        position: absolute;
+        height: 23px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        transition:
+          opacity 0.12s,
+          transform 0.12s;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .brick.hit {
+        transform: scale(0.88);
+        opacity: 0.7;
+      }
+
+      .brick.normal {
+        background: linear-gradient(135deg, #6c63d9, #8175e8);
+      }
+
+      .brick.strong {
+        background: linear-gradient(135deg, #ff8a65, #ff5252);
+      }
+
+      .brick.bonus {
+        background: linear-gradient(135deg, #55c88a, #38b878);
+      }
+
+      /* PADDLE */
+
+      #paddle {
+        position: absolute;
+        bottom: 17px;
+        left: 50%;
+        width: 100px;
+        height: 14px;
+        border-radius: 10px;
+        background: linear-gradient(90deg, #6c63d9, #74b9ff);
+        box-shadow:
+          0 0 15px rgba(116, 185, 255, 0.65),
+          0 0 28px rgba(108, 99, 217, 0.3);
+      }
+
+      /* BALL */
+
+      #ball {
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background: white;
+        box-shadow:
+          0 0 10px white,
+          0 0 22px rgba(116, 185, 255, 0.9);
+      }
+
+      /* POWER UP */
+
+      .powerup {
+        position: absolute;
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+        z-index: 8;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+      }
+
+      .power-wide {
+        background: #74b9ff;
+      }
+
+      .power-multi {
+        background: #55c88a;
+      }
+
+      .power-slow {
+        background: #8175e8;
+      }
+
+      /* PARTICLES */
+
+      .particle {
+        position: absolute;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      /* CONTROLS */
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      .control-button {
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        color: white;
+        padding: 10px 17px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+
+      .control-button:hover {
+        transform: translateY(-2px);
+        border-color: #8175e8;
+      }
+
+      .restart-button {
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+        border-color: transparent;
+      }
+
+      .instructions {
+        text-align: center;
+        color: #9290aa;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+
+      /* OVERLAY */
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: rgba(8, 8, 25, 0.78);
+        backdrop-filter: blur(8px);
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      .overlay-box {
+        width: min(390px, 90%);
+        padding: 25px 20px;
+        text-align: center;
+        border-radius: 22px;
+        background: rgba(25, 23, 59, 0.97);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .trophy {
+        font-size: 48px;
+        margin-bottom: 7px;
+      }
+
+      .overlay-small {
+        color: #74b9ff;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+
+      .overlay-box h2 {
+        margin-top: 5px;
+        font-size: 27px;
+      }
+
+      .final-score-label {
+        color: #aaa8c5;
+        font-size: 11px;
+        margin-top: 15px;
+        letter-spacing: 1px;
+      }
+
+      .final-score {
+        font-size: 45px;
+        font-weight: 900;
+        margin-top: 2px;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .record-message {
+        color: #55c88a;
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 5px;
+        min-height: 20px;
+      }
+
+      .overlay-button {
+        margin-top: 18px;
+        border: none;
+        padding: 11px 22px;
+        border-radius: 12px;
+        color: white;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+      }
+
+      .back-to-games {
+        display: block;
+        width: fit-content;
+        margin: 10px auto 0;
+        padding: 9px 15px;
+        border-radius: 9px;
+        color: #cfcdf4;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        transition: 0.2s ease;
+      }
+
+      .back-to-games:hover {
+        color: white;
+        background: rgba(129, 117, 232, 0.18);
+        border-color: rgba(129, 117, 232, 0.4);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 600px) {
+        .page {
+          padding: 15px 0 20px;
+        }
+
+        #gameArea {
+          height: 330px;
+        }
+
+        .hud {
+          gap: 5px;
+        }
+
+        .hud-box {
+          padding: 7px 4px;
+        }
+
+        .hud-value {
+          font-size: 17px;
+        }
+
+        .control-button {
+          padding: 9px 13px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="top">
+        <div class="game-label">🧱 GAME 05 • ARCADE</div>
+
+        <h1>Brick Breaker</h1>
+
+        <div id="greeting" class="greeting">Ready, Player!</div>
+      </div>
+
+      <div class="hud">
+        <div class="hud-box">
+          <div class="hud-label">SCORE</div>
+          <div id="score" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">BEST</div>
+          <div id="bestScore" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">LEVEL</div>
+          <div id="level" class="hud-value">1</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">LIVES</div>
+          <div id="lives" class="hud-value">❤️❤️❤️</div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div id="gameArea">
+          <div id="paddle"></div>
+
+          <div id="ball"></div>
+
+          <div class="overlay" id="overlay">
+            <div class="overlay-box">
+              <div id="overlayTrophy" class="trophy">🧱</div>
+
+              <div id="overlaySmall" class="overlay-small">READY?</div>
+
+              <h2 id="overlayTitle">BRICK BREAKER</h2>
+
+              <div class="final-score-label">
+                BREAK THE BRICKS & CLEAR THE LEVELS
+              </div>
+
+              <div id="finalScore" class="final-score">0</div>
+
+              <div id="recordMessage" class="record-message">🎮 Good luck!</div>
+
+              <button id="overlayButton" class="overlay-button">
+                🚀 START GAME
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="soundBtn" class="control-button">🔊 Sound On</button>
+
+          <button id="restartBtn" class="control-button restart-button">
+            🔄 Restart Game
+          </button>
+        </div>
+
+        <div class="instructions">
+          🖱️ Mouse • ⌨️ ← → / A D • 📱 Touch to move
+        </div>
+      </div>
+
+      <a href="../index.html#games" class="back-to-games"> ← Back to Games </a>
+    </div>
+
+    <script>
+      const gameArea = document.getElementById("gameArea");
+
+      const paddle = document.getElementById("paddle");
+
+      const ball = document.getElementById("ball");
+
+      const scoreElement = document.getElementById("score");
+
+      const bestScoreElement = document.getElementById("bestScore");
+
+      const levelElement = document.getElementById("level");
+
+      const livesElement = document.getElementById("lives");
+
+      const overlay = document.getElementById("overlay");
+
+      const overlayTrophy = document.getElementById("overlayTrophy");
+
+      const overlaySmall = document.getElementById("overlaySmall");
+
+      const overlayTitle = document.getElementById("overlayTitle");
+
+      const finalScore = document.getElementById("finalScore");
+
+      const recordMessage = document.getElementById("recordMessage");
+
+      const overlayButton = document.getElementById("overlayButton");
+
+      const soundBtn = document.getElementById("soundBtn");
+
+      const restartBtn = document.getElementById("restartBtn");
+
+      const greeting = document.getElementById("greeting");
+
+      /* PLAYER */
+
+      const playerName = localStorage.getItem("kidsGamePlayerName");
+
+      if (playerName) {
+        greeting.textContent = "👋 Ready, " + playerName + "?";
+      }
+
+      /* VARIABLES */
+
+      let score = 0;
+
+      let bestScore = Number(localStorage.getItem("brickBreakerBest")) || 0;
+
+      let level = 1;
+
+      let lives = 3;
+
+      let gameRunning = false;
+
+      let animationFrame = null;
+
+      let bricks = [];
+
+      let powerUps = [];
+
+      let particles = [];
+
+      let ballX = 0;
+
+      let ballY = 0;
+
+      let ballDX = 3;
+
+      let ballDY = -3.2;
+
+      let paddleX = 0;
+
+      let paddleWidth = 100;
+
+      let soundOn = true;
+
+      let audioContext = null;
+
+      let wideTimer = null;
+
+      let slowTimer = null;
+
+      let progressionAwarded = false;
+
+      bestScoreElement.textContent = bestScore;
+
+      /* PROGRESSION */
+
+      function getPlayerXP() {
+        return Number(localStorage.getItem("kidsGameXP")) || 0;
+      }
+
+      function addPlayerXP(amount) {
+        const currentXP = getPlayerXP();
+
+        const newXP = currentXP + amount;
+
+        localStorage.setItem("kidsGameXP", newXP);
+
+        return newXP;
+      }
+
+      function getGamesPlayed() {
+        return Number(localStorage.getItem("kidsGamesPlayed")) || 0;
+      }
+
+      function incrementGamesPlayed() {
+        const gamesPlayed = getGamesPlayed() + 1;
+
+        localStorage.setItem("kidsGamesPlayed", gamesPlayed);
+
+        return gamesPlayed;
+      }
+
+      function getAchievements() {
+        try {
+          return JSON.parse(localStorage.getItem("kidsAchievements")) || [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveAchievements(achievements) {
+        localStorage.setItem("kidsAchievements", JSON.stringify(achievements));
+      }
+
+      function unlockAchievement(achievementId) {
+        const achievements = getAchievements();
+
+        if (achievements.includes(achievementId)) {
+          return false;
+        }
+
+        achievements.push(achievementId);
+
+        saveAchievements(achievements);
+
+        return true;
+      }
+
+      function awardProgression(finalGameScore, won) {
+        if (progressionAwarded) {
+          return;
+        }
+
+        progressionAwarded = true;
+
+        const xpEarned = 10 + Math.min(finalGameScore, 50);
+
+        addPlayerXP(xpEarned);
+
+        incrementGamesPlayed();
+
+        const newAchievements = [];
+
+        if (unlockAchievement("brick_breaker_first")) {
+          newAchievements.push("🧱 Brick Starter!");
+        }
+
+        if (finalGameScore >= 25 && unlockAchievement("brick_breaker_25")) {
+          newAchievements.push("⭐ Brick Breaker!");
+        }
+
+        if (finalGameScore >= 50 && unlockAchievement("brick_breaker_50")) {
+          newAchievements.push("🔥 Brick Master!");
+        }
+
+        if (won && unlockAchievement("brick_breaker_win")) {
+          newAchievements.push("🏆 Level Legend!");
+        }
+
+        let message = "⭐ +" + xpEarned + " XP";
+
+        if (newAchievements.length > 0) {
+          message += " • " + newAchievements[0];
+        }
+
+        recordMessage.textContent = message;
+      }
+
+      /* SOUND */
+
+      function playSound(frequency, duration, type = "sine", volume = 0.06) {
+        if (!soundOn) return;
+
+        try {
+          if (!audioContext) {
+            audioContext = new (
+              window.AudioContext || window.webkitAudioContext
+            )();
+          }
+
+          if (audioContext.state === "suspended") {
+            audioContext.resume();
+          }
+
+          const oscillator = audioContext.createOscillator();
+
+          const gain = audioContext.createGain();
+
+          oscillator.type = type;
+
+          oscillator.frequency.value = frequency;
+
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+
+          gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            audioContext.currentTime + duration,
+          );
+
+          oscillator.connect(gain);
+
+          gain.connect(audioContext.destination);
+
+          oscillator.start();
+
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (e) {}
+      }
+
+      soundBtn.addEventListener("click", function () {
+        soundOn = !soundOn;
+
+        soundBtn.textContent = soundOn ? "🔊 Sound On" : "🔇 Sound Off";
+
+        if (soundOn) {
+          playSound(650, 0.1);
+        }
+      });
+
+      /* PADDLE */
+
+      function movePaddle(x) {
+        const width = gameArea.clientWidth;
+
+        paddleX = Math.max(
+          0,
+          Math.min(width - paddleWidth, x - paddleWidth / 2),
+        );
+
+        paddle.style.left = paddleX + "px";
+      }
+
+      gameArea.addEventListener("mousemove", function (event) {
+        if (!gameRunning) return;
+
+        const rect = gameArea.getBoundingClientRect();
+
+        movePaddle(event.clientX - rect.left);
+      });
+
+      gameArea.addEventListener(
+        "touchmove",
+        function (event) {
+          if (!gameRunning) return;
+
+          event.preventDefault();
+
+          const touch = event.touches[0];
+
+          const rect = gameArea.getBoundingClientRect();
+
+          movePaddle(touch.clientX - rect.left);
+        },
+        {
+          passive: false,
+        },
+      );
+
+      document.addEventListener("keydown", function (event) {
+        if (!gameRunning) return;
+
+        if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+          event.preventDefault();
+
+          movePaddle(paddleX - 45);
+        }
+
+        if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+          event.preventDefault();
+
+          movePaddle(paddleX + paddleWidth + 45);
+        }
+      });
+
+      /* BRICKS */
+
+      function createBricks() {
+        document.querySelectorAll(".brick").forEach((brick) => brick.remove());
+
+        bricks = [];
+
+        const rows = Math.min(4 + level, 7);
+
+        const columns = 8;
+
+        const gap = 7;
+
+        const brickHeight = 23;
+
+        const areaWidth = gameArea.clientWidth;
+
+        const brickWidth = (areaWidth - gap * (columns - 1) - 20) / columns;
+
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < columns; col++) {
+            const brick = document.createElement("div");
+
+            brick.className = "brick";
+
+            const random = Math.random();
+
+            let type = "normal";
+
+            let hits = 1;
+
+            if (random < 0.15 && level >= 2) {
+              type = "bonus";
+            } else if (random < 0.35 && level >= 2) {
+              type = "strong";
+
+              hits = 2;
+            }
+
+            brick.classList.add(type);
+
+            const x = 10 + col * (brickWidth + gap);
+
+            const y = 15 + row * (brickHeight + gap);
+
+            brick.style.width = brickWidth + "px";
+
+            brick.style.left = x + "px";
+
+            brick.style.top = y + "px";
+
+            gameArea.appendChild(brick);
+
+            bricks.push({
+              element: brick,
+              x: x,
+              y: y,
+              width: brickWidth,
+              height: brickHeight,
+              type: type,
+              hits: hits,
+            });
+          }
+        }
+      }
+
+      /* BALL */
+
+      function resetBall() {
+        ballX = gameArea.clientWidth / 2 - 7.5;
+
+        ballY = gameArea.clientHeight - 70;
+
+        const direction = Math.random() > 0.5 ? 1 : -1;
+
+        const speed = Math.min(3.2 + level * 0.25, 5.8);
+
+        ballDX = speed * direction;
+
+        ballDY = -speed;
+
+        ball.style.left = ballX + "px";
+
+        ball.style.top = ballY + "px";
+      }
+
+      /* LIVES */
+
+      function updateLives() {
+        livesElement.textContent = "❤️".repeat(lives) + "🖤".repeat(3 - lives);
+      }
+
+      /* PARTICLES */
+
+      function createParticles(x, y) {
+        for (let i = 0; i < 7; i++) {
+          const particle = document.createElement("div");
+
+          particle.className = "particle";
+
+          particle.style.left = x + "px";
+
+          particle.style.top = y + "px";
+
+          particle.style.background = i % 2 === 0 ? "#74b9ff" : "#8175e8";
+
+          gameArea.appendChild(particle);
+
+          particles.push({
+            element: particle,
+            x: x,
+            y: y,
+            dx: (Math.random() - 0.5) * 5,
+            dy: (Math.random() - 0.5) * 5,
+            life: 25,
+          });
+        }
+      }
+
+      function updateParticles() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+
+          p.x += p.dx;
+
+          p.y += p.dy;
+
+          p.dy += 0.12;
+
+          p.life--;
+
+          p.element.style.left = p.x + "px";
+
+          p.element.style.top = p.y + "px";
+
+          p.element.style.opacity = p.life / 25;
+
+          if (p.life <= 0) {
+            p.element.remove();
+
+            particles.splice(i, 1);
+          }
+        }
+      }
+
+      /* POWER UPS */
+
+      function createPowerUp(x, y) {
+        const types = ["wide", "multi", "slow"];
+
+        const type = types[Math.floor(Math.random() * types.length)];
+
+        const power = document.createElement("div");
+
+        power.className = "powerup power-" + type;
+
+        power.textContent =
+          type === "wide" ? "↔" : type === "multi" ? "●" : "S";
+
+        power.style.left = x + "px";
+
+        power.style.top = y + "px";
+
+        gameArea.appendChild(power);
+
+        powerUps.push({
+          element: power,
+          x: x,
+          y: y,
+          type: type,
+        });
+      }
+
+      function activatePowerUp(type) {
+        if (type === "wide") {
+          paddleWidth = 155;
+
+          paddle.style.width = paddleWidth + "px";
+
+          clearTimeout(wideTimer);
+
+          wideTimer = setTimeout(function () {
+            paddleWidth = 100;
+
+            paddle.style.width = "100px";
+          }, 7000);
+        }
+
+        if (type === "slow") {
+          ballDX *= 0.7;
+
+          ballDY *= 0.7;
+
+          clearTimeout(slowTimer);
+
+          slowTimer = setTimeout(function () {
+            ballDX *= 1.35;
+
+            ballDY *= 1.35;
+          }, 6000);
+        }
+
+        if (type === "multi") {
+          score += 3;
+
+          scoreElement.textContent = score;
+
+          playSound(900, 0.15, "sine", 0.08);
+        }
+      }
+
+      function updatePowerUps() {
+        for (let i = powerUps.length - 1; i >= 0; i--) {
+          const power = powerUps[i];
+
+          power.y += 2.5;
+
+          power.element.style.top = power.y + "px";
+
+          const paddleY = gameArea.clientHeight - 17 - 14;
+
+          if (
+            power.y + 28 >= paddleY &&
+            power.y <= paddleY + 14 &&
+            power.x + 28 >= paddleX &&
+            power.x <= paddleX + paddleWidth
+          ) {
+            activatePowerUp(power.type);
+
+            power.element.remove();
+
+            powerUps.splice(i, 1);
+
+            continue;
+          }
+
+          if (power.y > gameArea.clientHeight) {
+            power.element.remove();
+
+            powerUps.splice(i, 1);
+          }
+        }
+      }
+
+      /* GAME LOOP */
+
+      function gameLoop() {
+        if (!gameRunning) return;
+
+        const width = gameArea.clientWidth;
+
+        const height = gameArea.clientHeight;
+
+        ballX += ballDX;
+
+        ballY += ballDY;
+
+        /* WALL */
+
+        if (ballX <= 0) {
+          ballX = 0;
+
+          ballDX = Math.abs(ballDX);
+
+          playSound(300, 0.035, "square", 0.025);
+        }
+
+        if (ballX + 15 >= width) {
+          ballX = width - 15;
+
+          ballDX = -Math.abs(ballDX);
+
+          playSound(300, 0.035, "square", 0.025);
+        }
+
+        /* TOP */
+
+        if (ballY <= 0) {
+          ballY = 0;
+
+          ballDY = Math.abs(ballDY);
+
+          playSound(350, 0.035, "square", 0.025);
+        }
+
+        /* PADDLE */
+
+        const paddleY = height - 17 - 14;
+
+        if (
+          ballY + 15 >= paddleY &&
+          ballY <= paddleY + 14 &&
+          ballX + 15 >= paddleX &&
+          ballX <= paddleX + paddleWidth &&
+          ballDY > 0
+        ) {
+          ballY = paddleY - 15;
+
+          ballDY = -Math.abs(ballDY);
+
+          const paddleCenter = paddleX + paddleWidth / 2;
+
+          const ballCenter = ballX + 7.5;
+
+          const hitPosition = (ballCenter - paddleCenter) / (paddleWidth / 2);
+
+          ballDX = hitPosition * 4.5;
+
+          if (Math.abs(ballDX) < 1.3) {
+            ballDX = ballDX < 0 ? -1.3 : 1.3;
+          }
+
+          playSound(500, 0.06, "sine", 0.05);
+        }
+
+        /* BRICKS */
+
+        for (let i = bricks.length - 1; i >= 0; i--) {
+          const brick = bricks[i];
+
+          if (
+            ballX + 15 > brick.x &&
+            ballX < brick.x + brick.width &&
+            ballY + 15 > brick.y &&
+            ballY < brick.y + brick.height
+          ) {
+            const overlapLeft = ballX + 15 - brick.x;
+
+            const overlapRight = brick.x + brick.width - ballX;
+
+            const overlapTop = ballY + 15 - brick.y;
+
+            const overlapBottom = brick.y + brick.height - ballY;
+
+            const minHorizontal = Math.min(overlapLeft, overlapRight);
+
+            const minVertical = Math.min(overlapTop, overlapBottom);
+
+            if (minHorizontal < minVertical) {
+              ballDX *= -1;
+            } else {
+              ballDY *= -1;
+            }
+
+            brick.hits--;
+
+            if (brick.hits <= 0) {
+              const points =
+                brick.type === "bonus" ? 5 : brick.type === "strong" ? 2 : 1;
+
+              score += points;
+
+              scoreElement.textContent = score;
+
+              createParticles(
+                brick.x + brick.width / 2,
+                brick.y + brick.height / 2,
+              );
+
+              if (brick.type === "bonus" && Math.random() < 0.6) {
+                createPowerUp(brick.x + brick.width / 2 - 14, brick.y);
+              }
+
+              brick.element.remove();
+
+              bricks.splice(i, 1);
+
+              playSound(
+                brick.type === "bonus" ? 1000 : 700,
+                0.08,
+                "sine",
+                0.06,
+              );
+            } else {
+              brick.element.classList.add("hit");
+
+              setTimeout(() => {
+                brick.element.classList.remove("hit");
+              }, 120);
+
+              playSound(420, 0.05, "square", 0.04);
+            }
+
+            break;
+          }
+        }
+
+        /* BEST SCORE */
+
+        if (score > bestScore) {
+          bestScore = score;
+
+          bestScoreElement.textContent = bestScore;
+        }
+
+        /* PARTICLES */
+
+        updateParticles();
+
+        updatePowerUps();
+
+        /* LEVEL COMPLETE */
+
+        if (bricks.length === 0) {
+          level++;
+
+          levelElement.textContent = level;
+
+          playSound(900, 0.15, "sine", 0.08);
+
+          if (level > 5) {
+            endGame(true);
+
+            return;
+          }
+
+          createBricks();
+
+          resetBall();
+
+          gameRunning = false;
+
+          setTimeout(function () {
+            if (!overlay.classList.contains("hidden")) {
+              return;
+            }
+
+            gameRunning = true;
+
+            gameLoop();
+          }, 700);
+
+          return;
+        }
+
+        /* BALL LOST */
+
+        if (ballY > height) {
+          lives--;
+
+          updateLives();
+
+          playSound(180, 0.18, "square", 0.07);
+
+          if (lives <= 0) {
+            endGame(false);
+
+            return;
+          }
+
+          resetBall();
+
+          gameRunning = false;
+
+          setTimeout(function () {
+            if (overlay.classList.contains("hidden")) {
+              gameRunning = true;
+
+              gameLoop();
+            }
+          }, 700);
+
+          return;
+        }
+
+        ball.style.left = ballX + "px";
+
+        ball.style.top = ballY + "px";
+
+        animationFrame = requestAnimationFrame(gameLoop);
+      }
+
+      /* START */
+
+      function startGame() {
+        cancelAnimationFrame(animationFrame);
+
+        document
+          .querySelectorAll(".brick,.powerup,.particle")
+          .forEach((element) => element.remove());
+
+        bricks = [];
+
+        powerUps = [];
+
+        particles = [];
+
+        score = 0;
+
+        level = 1;
+
+        lives = 3;
+
+        gameRunning = true;
+
+        progressionAwarded = false;
+
+        paddleWidth = 100;
+
+        paddle.style.width = "100px";
+
+        scoreElement.textContent = "0";
+
+        levelElement.textContent = "1";
+
+        updateLives();
+
+        bestScoreElement.textContent = bestScore;
+
+        createBricks();
+
+        paddleX = (gameArea.clientWidth - paddleWidth) / 2;
+
+        paddle.style.left = paddleX + "px";
+
+        resetBall();
+
+        overlay.classList.add("hidden");
+
+        playSound(550, 0.1);
+
+        gameLoop();
+      }
+
+      /* END */
+
+      function endGame(won) {
+        if (!gameRunning) {
+          return;
+        }
+
+        gameRunning = false;
+
+        cancelAnimationFrame(animationFrame);
+
+        const oldBest = Number(localStorage.getItem("brickBreakerBest")) || 0;
+
+        const isNewRecord = score > oldBest;
+
+        if (isNewRecord) {
+          bestScore = score;
+
+          localStorage.setItem("brickBreakerBest", score);
+        } else {
+          bestScore = oldBest;
+        }
+
+        bestScoreElement.textContent = bestScore;
+
+        finalScore.textContent = score;
+
+        /* AWARD PROGRESSION */
+
+        awardProgression(score, won);
+
+        if (won) {
+          overlayTrophy.textContent = "🏆";
+
+          overlaySmall.textContent = "YOU WIN!";
+
+          overlayTitle.textContent = "BRICK MASTER!";
+
+          if (isNewRecord) {
+            recordMessage.textContent = "🎉 NEW HIGH SCORE!";
+          }
+        } else {
+          overlayTrophy.textContent = "💥";
+
+          overlaySmall.textContent = "GAME OVER";
+
+          overlayTitle.textContent = "NICE TRY!";
+
+          if (isNewRecord) {
+            recordMessage.textContent = "🎉 NEW HIGH SCORE!";
+          }
+        }
+
+        /*
+          Keep the progression message
+          when there is no new record.
+        */
+
+        if (isNewRecord) {
+          const progression = "⭐ +" + (10 + Math.min(score, 50)) + " XP";
+
+          recordMessage.textContent = "🎉 NEW HIGH SCORE! • " + progression;
+        }
+
+        overlayButton.textContent = "🚀 PLAY AGAIN";
+
+        overlay.classList.remove("hidden");
+
+        playSound(won ? 950 : 220, 0.3, won ? "sine" : "square", 0.08);
+      }
+
+      overlayButton.addEventListener("click", startGame);
+
+      restartBtn.addEventListener("click", startGame);
+
+      updateLives();
+    </script>
+  </body>
+</html>

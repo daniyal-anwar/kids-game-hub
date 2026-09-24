@@ -1,0 +1,1306 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Color Switch</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        color: white;
+        background: radial-gradient(
+          circle at top,
+          #27245a 0%,
+          #15142f 45%,
+          #0b0b1b 100%
+        );
+      }
+
+      .page {
+        width: min(800px, 92%);
+        margin: auto;
+        padding: 20px 0 25px;
+      }
+
+      .top {
+        text-align: center;
+        margin-bottom: 14px;
+      }
+
+      .game-label {
+        color: #74b9ff;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+      }
+
+      h1 {
+        font-size: clamp(28px, 5vw, 42px);
+        font-weight: 900;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .greeting {
+        margin-top: 5px;
+        color: #c9c7df;
+        font-size: 14px;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .hud-box {
+        background: rgba(20, 19, 50, 0.9);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 14px;
+        padding: 8px;
+        text-align: center;
+      }
+
+      .hud-label {
+        color: #aaa8c5;
+        font-size: 9px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      .hud-value {
+        margin-top: 3px;
+        font-size: 20px;
+        font-weight: 900;
+      }
+
+      .game-card {
+        position: relative;
+        background: rgba(15, 15, 38, 0.94);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 22px;
+        padding: 12px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.35),
+          0 0 30px rgba(108, 99, 217, 0.08);
+      }
+
+      #gameArea {
+        position: relative;
+        height: 360px;
+        overflow: hidden;
+        border-radius: 17px;
+        background: radial-gradient(
+          circle at center,
+          #222052 0%,
+          #12112d 60%,
+          #0b0b1b 100%
+        );
+        border: 1px solid rgba(116, 185, 255, 0.2);
+        touch-action: none;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      .control-button {
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        color: white;
+        padding: 10px 17px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+
+      .control-button:hover {
+        transform: translateY(-2px);
+        border-color: #8175e8;
+      }
+
+      .restart-button {
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+        border-color: transparent;
+      }
+
+      .instructions {
+        text-align: center;
+        color: #9290aa;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: rgba(8, 8, 25, 0.78);
+        backdrop-filter: blur(8px);
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      .overlay-box {
+        width: min(390px, 90%);
+        padding: 25px 20px;
+        text-align: center;
+        border-radius: 22px;
+        background: rgba(25, 23, 59, 0.97);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .trophy {
+        font-size: 48px;
+        margin-bottom: 7px;
+      }
+
+      .overlay-small {
+        color: #74b9ff;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+
+      .overlay-box h2 {
+        margin-top: 5px;
+        font-size: 27px;
+      }
+
+      .final-score-label {
+        color: #aaa8c5;
+        font-size: 11px;
+        margin-top: 15px;
+        letter-spacing: 1px;
+      }
+
+      .final-score {
+        font-size: 45px;
+        font-weight: 900;
+        margin-top: 2px;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .record-message {
+        color: #55c88a;
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 5px;
+        min-height: 20px;
+      }
+
+      .overlay-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .overlay-button {
+        border: none;
+        padding: 11px 22px;
+        border-radius: 12px;
+        color: white;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+      }
+
+      .close-button {
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+      }
+
+      .back-to-games {
+        display: block;
+        width: fit-content;
+        margin: 10px auto 0;
+        padding: 9px 15px;
+        border-radius: 9px;
+        color: #cfcdf4;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        transition: 0.2s ease;
+      }
+
+      .back-to-games:hover {
+        color: white;
+        background: rgba(129, 117, 232, 0.18);
+        border-color: rgba(129, 117, 232, 0.4);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 600px) {
+        .page {
+          padding: 15px 0 20px;
+        }
+
+        #gameArea {
+          height: 330px;
+        }
+
+        .hud {
+          gap: 5px;
+        }
+
+        .hud-box {
+          padding: 7px 4px;
+        }
+
+        .hud-value {
+          font-size: 17px;
+        }
+
+        .control-button {
+          padding: 9px 13px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="top">
+        <div class="game-label">🌈 GAME 10 • ARCADE</div>
+
+        <h1>Color Switch</h1>
+
+        <div id="greeting" class="greeting">Ready, Player!</div>
+      </div>
+
+      <div class="hud">
+        <div class="hud-box">
+          <div class="hud-label">SCORE</div>
+          <div id="score" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">BEST</div>
+          <div id="bestScore" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">LEVEL</div>
+          <div id="level" class="hud-value">1</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">COLOR</div>
+          <div id="color" class="hud-value">🔴</div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div id="gameArea">
+          <canvas id="gameCanvas"></canvas>
+
+          <div id="overlay" class="overlay">
+            <div class="overlay-box">
+              <div id="overlayTrophy" class="trophy">🌈</div>
+
+              <div id="overlaySmall" class="overlay-small">READY?</div>
+
+              <h2 id="overlayTitle">COLOR SWITCH</h2>
+
+              <div class="final-score-label">
+                MATCH YOUR COLOR & PASS THE RINGS
+              </div>
+
+              <div id="finalScore" class="final-score">0</div>
+
+              <div id="recordMessage" class="record-message">🎮 Good luck!</div>
+
+              <div class="overlay-actions">
+                <button id="overlayButton" class="overlay-button">
+                  🚀 START GAME
+                </button>
+
+                <button id="closeButton" class="overlay-button close-button">
+                  ✕ CLOSE
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="soundBtn" class="control-button">🔊 Sound On</button>
+
+          <button id="restartBtn" class="control-button restart-button">
+            🔄 Restart Game
+          </button>
+        </div>
+
+        <div class="instructions">
+          ⌨️ Press SPACE to start & jump • 🖱️ Click / Tap to jump
+        </div>
+      </div>
+
+      <a href="../index.html#games" class="back-to-games"> ← Back to Games </a>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("gameCanvas");
+
+      const ctx = canvas.getContext("2d");
+
+      const gameArea = document.getElementById("gameArea");
+
+      const scoreEl = document.getElementById("score");
+
+      const bestEl = document.getElementById("bestScore");
+
+      const levelEl = document.getElementById("level");
+
+      const colorEl = document.getElementById("color");
+
+      const greeting = document.getElementById("greeting");
+
+      const overlay = document.getElementById("overlay");
+
+      const overlayButton = document.getElementById("overlayButton");
+
+      const closeButton = document.getElementById("closeButton");
+
+      const restartButton = document.getElementById("restartBtn");
+
+      const soundButton = document.getElementById("soundBtn");
+
+      const finalScore = document.getElementById("finalScore");
+
+      const recordMessage = document.getElementById("recordMessage");
+
+      const overlayTrophy = document.getElementById("overlayTrophy");
+
+      const overlaySmall = document.getElementById("overlaySmall");
+
+      const overlayTitle = document.getElementById("overlayTitle");
+
+      /* =========================
+         PLAYER NAME
+      ========================= */
+
+      const savedName = localStorage.getItem("kidsGamePlayerName");
+
+      if (savedName) {
+        greeting.textContent = `Ready, ${savedName}!`;
+      }
+
+      /* =========================
+         COLORS
+      ========================= */
+
+      const COLORS = ["#ff5c6c", "#ffd166", "#55d88a", "#5f9eea"];
+
+      const EMOJIS = ["🔴", "🟡", "🟢", "🔵"];
+
+      /* =========================
+         STATE
+      ========================= */
+
+      let width = 0;
+      let height = 0;
+
+      let running = false;
+
+      let waiting = false;
+
+      let score = 0;
+
+      let best = Number(localStorage.getItem("colorSwitchBest")) || 0;
+
+      let level = 1;
+
+      let currentColor = 0;
+
+      let animationId = null;
+
+      let lastTime = 0;
+
+      let cameraY = 0;
+
+      let soundOn = true;
+
+      let audioContext = null;
+
+      let rings = [];
+
+      let particles = [];
+
+      /*
+      Shared progression:
+      make sure one game run
+      can only award progression
+      once.
+      */
+
+      let progressionAwarded = false;
+
+      const player = {
+        x: 0,
+        y: 0,
+        radius: 9,
+        velocity: 0,
+      };
+
+      const GRAVITY = 0.34;
+
+      const JUMP = -6.2;
+
+      const RING_RADIUS = 85;
+
+      const RING_WIDTH = 17;
+
+      const RING_DISTANCE = 285;
+
+      const START_Y = 285;
+
+      /* =========================
+         RESIZE
+      ========================= */
+
+      function resize() {
+        const rect = gameArea.getBoundingClientRect();
+
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        width = rect.width;
+
+        height = rect.height;
+
+        canvas.width = width * dpr;
+
+        canvas.height = height * dpr;
+
+        canvas.style.width = width + "px";
+
+        canvas.style.height = height + "px";
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      window.addEventListener("resize", resize);
+
+      resize();
+
+      /* =========================
+         SOUND
+      ========================= */
+
+      function sound(frequency, duration, type = "sine", volume = 0.05) {
+        if (!soundOn) {
+          return;
+        }
+
+        try {
+          if (!audioContext) {
+            audioContext = new (
+              window.AudioContext || window.webkitAudioContext
+            )();
+          }
+
+          if (audioContext.state === "suspended") {
+            audioContext.resume();
+          }
+
+          const osc = audioContext.createOscillator();
+
+          const gain = audioContext.createGain();
+
+          osc.type = type;
+
+          osc.frequency.value = frequency;
+
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+
+          gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            audioContext.currentTime + duration,
+          );
+
+          osc.connect(gain);
+
+          gain.connect(audioContext.destination);
+
+          osc.start();
+
+          osc.stop(audioContext.currentTime + duration);
+        } catch (e) {}
+      }
+
+      /* =========================
+         HUD
+      ========================= */
+
+      function updateHUD() {
+        scoreEl.textContent = Math.floor(score);
+
+        bestEl.textContent = best;
+
+        levelEl.textContent = level;
+
+        colorEl.textContent = EMOJIS[currentColor];
+      }
+
+      /* =========================
+         PROGRESSION
+      ========================= */
+
+      function getPlayerXP() {
+        return Number(localStorage.getItem("kidsGameXP")) || 0;
+      }
+
+      function addPlayerXP(amount) {
+        const currentXP = getPlayerXP();
+
+        const newXP = currentXP + amount;
+
+        localStorage.setItem("kidsGameXP", newXP);
+
+        return newXP;
+      }
+
+      function incrementGamesPlayed() {
+        const gamesPlayed =
+          Number(localStorage.getItem("kidsGamesPlayed")) || 0;
+
+        const newGamesPlayed = gamesPlayed + 1;
+
+        localStorage.setItem("kidsGamesPlayed", newGamesPlayed);
+
+        return newGamesPlayed;
+      }
+
+      function getAchievements() {
+        try {
+          return JSON.parse(localStorage.getItem("kidsAchievements")) || [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveAchievements(achievements) {
+        localStorage.setItem("kidsAchievements", JSON.stringify(achievements));
+      }
+
+      function unlockAchievement(achievementId) {
+        const achievements = getAchievements();
+
+        if (achievements.includes(achievementId)) {
+          return false;
+        }
+
+        achievements.push(achievementId);
+
+        saveAchievements(achievements);
+
+        return true;
+      }
+
+      function awardProgression(finalScore) {
+        if (progressionAwarded) {
+          return "";
+        }
+
+        progressionAwarded = true;
+
+        const xpEarned = 10 + Math.min(finalScore, 50);
+
+        addPlayerXP(xpEarned);
+
+        incrementGamesPlayed();
+
+        const newAchievements = [];
+
+        if (unlockAchievement("color_switch_first")) {
+          newAchievements.push("🌈 Color Starter!");
+        }
+
+        if (finalScore >= 15 && unlockAchievement("color_switch_15")) {
+          newAchievements.push("⭐ Color Jumper!");
+        }
+
+        if (finalScore >= 30 && unlockAchievement("color_switch_30")) {
+          newAchievements.push("🔥 Color Master!");
+        }
+
+        if (finalScore >= 50 && unlockAchievement("color_switch_50")) {
+          newAchievements.push("🏆 Color Legend!");
+        }
+
+        let message = `⭐ +${xpEarned} XP`;
+
+        if (newAchievements.length > 0) {
+          message += ` • ${newAchievements[0]}`;
+        }
+
+        return message;
+      }
+
+      /* =========================
+         RANDOM COLOR
+      ========================= */
+
+      function differentColor(oldColor) {
+        let color;
+
+        do {
+          color = Math.floor(Math.random() * 4);
+        } while (color === oldColor);
+
+        return color;
+      }
+
+      /* =========================
+         CREATE RING
+      ========================= */
+
+      function createRing(y) {
+        const colors = [0, 1, 2, 3];
+
+        for (let i = colors.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+
+          [colors[i], colors[j]] = [colors[j], colors[i]];
+        }
+
+        const rotation = Math.random() * Math.PI * 2;
+
+        const bottomAngle = Math.PI / 2;
+
+        let relative = (bottomAngle - rotation + Math.PI * 2) % (Math.PI * 2);
+
+        const bottomSegment = Math.floor(relative / (Math.PI / 2));
+
+        const existingIndex = colors.indexOf(currentColor);
+
+        [colors[bottomSegment], colors[existingIndex]] = [
+          colors[existingIndex],
+          colors[bottomSegment],
+        ];
+
+        rings.push({
+          x: width / 2,
+
+          y: y,
+
+          rotation: rotation,
+
+          speed: (Math.random() < 0.5 ? -1 : 1) * (0.016 + level * 0.0018),
+
+          colors: colors,
+
+          passed: false,
+        });
+      }
+
+      /* =========================
+         BUILD RINGS
+      ========================= */
+
+      function buildRings() {
+        rings = [];
+
+        createRing(START_Y - 65);
+
+        for (let i = 1; i < 15; i++) {
+          createRing(START_Y - 65 - i * RING_DISTANCE);
+        }
+      }
+
+      /* =========================
+         PARTICLES
+      ========================= */
+
+      function particlesAt(x, y, color) {
+        for (let i = 0; i < 12; i++) {
+          particles.push({
+            x: x,
+
+            y: y,
+
+            vx: (Math.random() - 0.5) * 4,
+
+            vy: (Math.random() - 0.5) * 4,
+
+            life: 1,
+
+            color: color,
+          });
+        }
+      }
+
+      /* =========================
+         DRAW BACKGROUND
+      ========================= */
+
+      function drawBackground() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < 45; i++) {
+          let y = (i * 91 - cameraY * 0.15) % height;
+
+          if (y < 0) {
+            y += height;
+          }
+
+          const x = (i * 157) % width;
+
+          ctx.beginPath();
+
+          ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+
+          ctx.fillStyle = "rgba(255,255,255,0.14)";
+
+          ctx.fill();
+        }
+      }
+
+      /* =========================
+         DRAW RING
+      ========================= */
+
+      function drawRing(ring) {
+        const y = ring.y - cameraY;
+
+        const section = Math.PI / 2;
+
+        for (let i = 0; i < 4; i++) {
+          const start = ring.rotation + i * section;
+
+          const end = start + section;
+
+          ctx.beginPath();
+
+          ctx.arc(ring.x, y, RING_RADIUS, start, end);
+
+          ctx.lineWidth = RING_WIDTH;
+
+          ctx.lineCap = "butt";
+
+          ctx.strokeStyle = COLORS[ring.colors[i]];
+
+          ctx.shadowBlur = 9;
+
+          ctx.shadowColor = COLORS[ring.colors[i]];
+
+          ctx.stroke();
+
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.beginPath();
+
+        ctx.arc(ring.x, y, RING_RADIUS - RING_WIDTH, 0, Math.PI * 2);
+
+        ctx.fillStyle = "rgba(9,9,28,0.9)";
+
+        ctx.fill();
+      }
+
+      /* =========================
+         DRAW PLAYER
+      ========================= */
+
+      function drawPlayer() {
+        const y = player.y - cameraY;
+
+        ctx.beginPath();
+
+        ctx.arc(player.x, y, player.radius, 0, Math.PI * 2);
+
+        ctx.fillStyle = COLORS[currentColor];
+
+        ctx.shadowBlur = 18;
+
+        ctx.shadowColor = COLORS[currentColor];
+
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+      }
+
+      /* =========================
+         GET RING SEGMENT
+      ========================= */
+
+      function getSegment(ring, x, y) {
+        const dx = x - ring.x;
+
+        const dy = y - ring.y;
+
+        let angle = Math.atan2(dy, dx);
+
+        let relative = angle - ring.rotation;
+
+        relative = (relative + Math.PI * 2) % (Math.PI * 2);
+
+        return Math.floor(relative / (Math.PI / 2));
+      }
+
+      /* =========================
+         CHECK COLLISION
+      ========================= */
+
+      function checkRing(ring) {
+        if (ring.passed) {
+          return;
+        }
+
+        const dx = player.x - ring.x;
+
+        const dy = player.y - ring.y;
+
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        const inner = RING_RADIUS - RING_WIDTH / 2 - player.radius;
+
+        const outer = RING_RADIUS + RING_WIDTH / 2 + player.radius;
+
+        if (distance < inner || distance > outer) {
+          if (player.y < ring.y - RING_RADIUS) {
+            ring.passed = true;
+
+            score++;
+
+            level = 1 + Math.floor(score / 5);
+
+            currentColor = differentColor(currentColor);
+
+            particlesAt(player.x, player.y, COLORS[currentColor]);
+
+            sound(780, 0.09, "sine", 0.06);
+
+            updateHUD();
+          }
+
+          return;
+        }
+
+        const segment = getSegment(ring, player.x, player.y);
+
+        const ringColor = ring.colors[segment];
+
+        if (ringColor === currentColor) {
+          return;
+        }
+
+        gameOver();
+      }
+
+      /* =========================
+         UPDATE PARTICLES
+      ========================= */
+
+      function updateParticles(delta) {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+
+          p.x += p.vx * delta;
+
+          p.y += p.vy * delta;
+
+          p.vy += 0.05 * delta;
+
+          p.life -= 0.035 * delta;
+
+          if (p.life <= 0) {
+            particles.splice(i, 1);
+          }
+        }
+      }
+
+      /* =========================
+         DRAW PARTICLES
+      ========================= */
+
+      function drawParticles() {
+        particles.forEach(function (p) {
+          ctx.globalAlpha = p.life;
+
+          ctx.beginPath();
+
+          ctx.arc(p.x, p.y - cameraY, 3, 0, Math.PI * 2);
+
+          ctx.fillStyle = p.color;
+
+          ctx.fill();
+        });
+
+        ctx.globalAlpha = 1;
+      }
+
+      /* =========================
+         UPDATE
+      ========================= */
+
+      function update(delta) {
+        if (!running) {
+          return;
+        }
+
+        player.velocity += GRAVITY * delta;
+
+        player.y += player.velocity * delta;
+
+        rings.forEach(function (ring) {
+          ring.rotation += ring.speed * delta;
+
+          checkRing(ring);
+        });
+
+        const targetCamera = Math.min(0, player.y - 175);
+
+        cameraY += (targetCamera - cameraY) * 0.08 * delta;
+
+        let highest = Infinity;
+
+        rings.forEach(function (ring) {
+          if (ring.y < highest) {
+            highest = ring.y;
+          }
+        });
+
+        if (highest > player.y - 1000) {
+          createRing(highest - RING_DISTANCE);
+        }
+
+        updateParticles(delta);
+
+        if (player.y - cameraY > height + 100) {
+          gameOver();
+        }
+      }
+
+      /* =========================
+         DRAW
+      ========================= */
+
+      function draw() {
+        drawBackground();
+
+        rings
+          .slice()
+          .sort(function (a, b) {
+            return a.y - b.y;
+          })
+          .forEach(function (ring) {
+            drawRing(ring);
+          });
+
+        drawParticles();
+
+        drawPlayer();
+
+        if (waiting) {
+          ctx.textAlign = "center";
+
+          ctx.font = "900 17px Arial";
+
+          ctx.fillStyle = "rgba(255,255,255,0.9)";
+
+          ctx.fillText("PRESS SPACE TO START", width / 2, 42);
+        }
+      }
+
+      /* =========================
+         GAME LOOP
+      ========================= */
+
+      function loop(timestamp) {
+        if (!running) {
+          return;
+        }
+
+        if (!lastTime) {
+          lastTime = timestamp;
+        }
+
+        let delta = (timestamp - lastTime) / 16.67;
+
+        delta = Math.min(delta, 2);
+
+        lastTime = timestamp;
+
+        update(delta);
+
+        draw();
+
+        animationId = requestAnimationFrame(loop);
+      }
+
+      /* =========================
+         JUMP
+      ========================= */
+
+      function jump() {
+        if (waiting) {
+          waiting = false;
+
+          running = true;
+
+          currentColor = Math.floor(Math.random() * 4);
+
+          buildRings();
+
+          player.velocity = JUMP;
+
+          updateHUD();
+
+          lastTime = 0;
+
+          sound(520, 0.06, "square", 0.035);
+
+          animationId = requestAnimationFrame(loop);
+
+          return;
+        }
+
+        if (!running) {
+          return;
+        }
+
+        player.velocity = JUMP;
+
+        sound(520, 0.06, "square", 0.035);
+      }
+
+      /* =========================
+         START
+      ========================= */
+
+      function startGame() {
+        cancelAnimationFrame(animationId);
+
+        progressionAwarded = false;
+
+        score = 0;
+
+        level = 1;
+
+        currentColor = 0;
+
+        player.x = width / 2;
+
+        player.y = START_Y;
+
+        player.velocity = 0;
+
+        cameraY = 0;
+
+        particles = [];
+
+        running = false;
+
+        waiting = true;
+
+        buildRings();
+
+        updateHUD();
+
+        overlay.classList.add("hidden");
+
+        draw();
+
+        sound(500, 0.1, "sine", 0.05);
+      }
+
+      /* =========================
+         GAME OVER
+      ========================= */
+
+      function gameOver() {
+        if (!running) {
+          return;
+        }
+
+        running = false;
+
+        waiting = false;
+
+        cancelAnimationFrame(animationId);
+
+        const final = Math.floor(score);
+
+        const oldBest = Number(localStorage.getItem("colorSwitchBest")) || 0;
+
+        const isRecord = final > oldBest;
+
+        if (isRecord) {
+          best = final;
+
+          localStorage.setItem("colorSwitchBest", final);
+
+          overlayTrophy.textContent = "🏆";
+
+          overlaySmall.textContent = "NEW RECORD!";
+
+          overlayTitle.textContent = "AMAZING!";
+
+          recordMessage.textContent = "🎉 New best score!";
+
+          sound(1000, 0.2, "triangle", 0.08);
+        } else {
+          best = oldBest;
+
+          overlayTrophy.textContent = "🌈";
+
+          overlaySmall.textContent = "GAME OVER";
+
+          overlayTitle.textContent = "COLOR SWITCH";
+
+          recordMessage.textContent = `🏆 Best score: ${best}`;
+
+          sound(180, 0.2, "sine", 0.06);
+        }
+
+        /*
+        Award shared progression
+        after the completed run.
+        */
+
+        const progressionMessage = awardProgression(final);
+
+        if (progressionMessage) {
+          if (isRecord) {
+            recordMessage.textContent = `🎉 New best score! • ${progressionMessage}`;
+          } else {
+            recordMessage.textContent = `${progressionMessage} • 🏆 Best score: ${best}`;
+          }
+        }
+
+        finalScore.textContent = final;
+
+        overlayButton.textContent = "🚀 PLAY AGAIN";
+
+        updateHUD();
+
+        overlay.classList.remove("hidden");
+      }
+
+      /* =========================
+         INPUT
+      ========================= */
+
+      gameArea.addEventListener("pointerdown", function () {
+        if (!overlay.classList.contains("hidden")) {
+          return;
+        }
+
+        jump();
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.code === "Space") {
+          event.preventDefault();
+
+          jump();
+        }
+      });
+
+      /* =========================
+         BUTTONS
+      ========================= */
+
+      overlayButton.addEventListener("click", startGame);
+
+      restartButton.addEventListener("click", startGame);
+
+      closeButton.addEventListener("click", function () {
+        running = false;
+
+        waiting = false;
+
+        cancelAnimationFrame(animationId);
+
+        rings = [];
+
+        particles = [];
+
+        score = 0;
+
+        level = 1;
+
+        currentColor = 0;
+
+        player.x = width / 2;
+
+        player.y = START_Y;
+
+        player.velocity = 0;
+
+        cameraY = 0;
+
+        updateHUD();
+
+        overlay.classList.add("hidden");
+
+        draw();
+      });
+
+      /* =========================
+         SOUND BUTTON
+      ========================= */
+
+      soundButton.addEventListener("click", function () {
+        soundOn = !soundOn;
+
+        soundButton.textContent = soundOn ? "🔊 Sound On" : "🔇 Sound Off";
+
+        if (soundOn) {
+          sound(600, 0.08, "sine", 0.04);
+        }
+      });
+
+      /* =========================
+         INITIAL
+      ========================= */
+
+      bestEl.textContent = best;
+
+      updateHUD();
+
+      draw();
+    </script>
+  </body>
+</html>

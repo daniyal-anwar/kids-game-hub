@@ -1,0 +1,1116 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Target Blaster | Kids Game Hub</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        color: white;
+        background: radial-gradient(
+          circle at top,
+          #27245a 0%,
+          #15142f 45%,
+          #0b0b1b 100%
+        );
+      }
+
+      .page {
+        width: min(800px, 92%);
+        margin: auto;
+        padding: 20px 0 25px;
+      }
+
+      .top {
+        text-align: center;
+        margin-bottom: 14px;
+      }
+
+      .game-label {
+        font-size: 13px;
+        font-weight: bold;
+        color: #74b9ff;
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+      }
+
+      h1 {
+        font-size: clamp(28px, 5vw, 42px);
+        font-weight: 900;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .greeting {
+        margin-top: 5px;
+        color: #c9c7df;
+        font-size: 14px;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .hud-box {
+        background: rgba(20, 19, 50, 0.9);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 14px;
+        padding: 9px 8px;
+        text-align: center;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .hud-label {
+        color: #aaa8c5;
+        font-size: 10px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      .hud-value {
+        margin-top: 3px;
+        font-size: 21px;
+        font-weight: 900;
+        color: white;
+      }
+
+      .game-card {
+        position: relative;
+        background: rgba(15, 15, 38, 0.94);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 22px;
+        padding: 12px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.35),
+          0 0 30px rgba(108, 99, 217, 0.08);
+      }
+
+      #gameArea {
+        position: relative;
+        height: 360px;
+        overflow: hidden;
+        border-radius: 17px;
+        background: radial-gradient(
+          circle at center,
+          #222052 0%,
+          #12112d 60%,
+          #0b0b1b 100%
+        );
+        border: 1px solid rgba(116, 185, 255, 0.2);
+        cursor: crosshair;
+        touch-action: none;
+      }
+
+      #player {
+        position: absolute;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%);
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #8175e8, #5f9eea);
+        box-shadow:
+          0 0 18px rgba(116, 185, 255, 0.7),
+          0 0 35px rgba(129, 117, 232, 0.35);
+        z-index: 5;
+      }
+
+      #player::after {
+        content: "";
+        position: absolute;
+        width: 9px;
+        height: 18px;
+        left: 50%;
+        top: -11px;
+        transform: translateX(-50%);
+        border-radius: 6px;
+        background: #74b9ff;
+        box-shadow: 0 0 10px #74b9ff;
+      }
+
+      .target {
+        position: absolute;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: radial-gradient(
+          circle,
+          #fff 0 12%,
+          #ff6b6b 13% 35%,
+          #ff3f64 36% 58%,
+          #8f1d48 59% 100%
+        );
+        border: 2px solid rgba(255, 255, 255, 0.8);
+        box-shadow:
+          0 0 12px rgba(255, 80, 110, 0.8),
+          0 0 25px rgba(255, 60, 100, 0.35);
+      }
+
+      .bullet {
+        position: absolute;
+        width: 7px;
+        height: 17px;
+        border-radius: 5px;
+        background: #74b9ff;
+        box-shadow:
+          0 0 8px #74b9ff,
+          0 0 16px rgba(116, 185, 255, 0.8);
+        z-index: 4;
+      }
+
+      .progress-message {
+        position: absolute;
+        left: 50%;
+        top: 16px;
+        z-index: 25;
+        transform: translateX(-50%) translateY(-10px);
+        opacity: 0;
+        pointer-events: none;
+        white-space: nowrap;
+        padding: 8px 13px;
+        border-radius: 999px;
+        color: white;
+        background: rgba(25, 23, 59, 0.96);
+        border: 1px solid rgba(129, 117, 232, 0.45);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        font-size: 12px;
+        font-weight: 900;
+        transition:
+          opacity 0.2s ease,
+          transform 0.2s ease;
+      }
+
+      .progress-message.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      .control-button {
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        color: white;
+        padding: 10px 17px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s ease;
+        box-shadow: 0 7px 18px rgba(0, 0, 0, 0.25);
+      }
+
+      .control-button:hover {
+        transform: translateY(-2px);
+        border-color: #8175e8;
+        box-shadow: 0 8px 22px rgba(129, 117, 232, 0.25);
+      }
+
+      .restart-button {
+        background: linear-gradient(135deg, #55c88a, #38a96f);
+        border-color: transparent;
+      }
+
+      .restart-button:hover {
+        background: linear-gradient(135deg, #55c88a, #38a96f);
+      }
+
+      .instructions {
+        margin-top: 10px;
+        padding: 10px 14px;
+        text-align: center;
+        color: #aaa8c5;
+        font-size: 11px;
+        line-height: 1.5;
+        border-radius: 11px;
+        background: rgba(20, 19, 48, 0.75);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .instructions strong {
+        color: white;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: rgba(8, 8, 25, 0.78);
+        backdrop-filter: blur(8px);
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      .overlay-box {
+        width: min(390px, 90%);
+        padding: 25px 20px;
+        text-align: center;
+        border-radius: 22px;
+        background: rgba(25, 23, 59, 0.97);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        box-shadow:
+          0 20px 60px rgba(0, 0, 0, 0.5),
+          0 0 35px rgba(108, 99, 217, 0.2);
+      }
+
+      .trophy {
+        font-size: 48px;
+        margin-bottom: 7px;
+      }
+
+      .overlay-small {
+        color: #74b9ff;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+
+      .overlay-box h2 {
+        margin-top: 5px;
+        font-size: 27px;
+      }
+
+      .final-score-label {
+        color: #aaa8c5;
+        font-size: 11px;
+        margin-top: 15px;
+        letter-spacing: 1px;
+      }
+
+      .final-score {
+        font-size: 45px;
+        font-weight: 900;
+        margin-top: 2px;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .record-message {
+        color: #55c88a;
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 5px;
+        min-height: 20px;
+      }
+
+      .overlay-button {
+        margin-top: 18px;
+        border: none;
+        padding: 11px 22px;
+        border-radius: 12px;
+        color: white;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+        box-shadow: 0 8px 25px rgba(108, 99, 217, 0.35);
+      }
+
+      .back-to-games {
+        display: block;
+        width: fit-content;
+        margin: 10px auto 0;
+        padding: 9px 15px;
+        border-radius: 9px;
+        color: #cfcdf4;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        transition: 0.2s ease;
+      }
+
+      .back-to-games:hover {
+        color: white;
+        background: rgba(129, 117, 232, 0.18);
+        border-color: rgba(129, 117, 232, 0.4);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 600px) {
+        .page {
+          padding: 15px 0 20px;
+        }
+
+        #gameArea {
+          height: 330px;
+        }
+
+        .hud {
+          gap: 7px;
+        }
+
+        .hud-box {
+          padding: 8px 5px;
+        }
+
+        .hud-value {
+          font-size: 19px;
+        }
+
+        .controls {
+          gap: 7px;
+        }
+
+        .control-button {
+          padding: 9px 13px;
+          font-size: 12px;
+        }
+
+        .progress-message {
+          max-width: 90%;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="top">
+        <div class="game-label">🎯 GAME 04 • SHOOTING</div>
+        <h1>Target Blaster</h1>
+        <div id="greeting" class="greeting">Ready, Player!</div>
+      </div>
+
+      <div class="hud">
+        <div class="hud-box">
+          <div class="hud-label">SCORE</div>
+          <div id="score" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">BEST</div>
+          <div id="bestScore" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">TIME</div>
+          <div id="timer" class="hud-value">30</div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div id="gameArea">
+          <div id="player"></div>
+
+          <div
+            class="progress-message"
+            id="progressMessage"
+            aria-live="polite"
+          ></div>
+
+          <div id="overlay" class="overlay">
+            <div class="overlay-box">
+              <div id="overlayTrophy" class="trophy">🎯</div>
+
+              <div id="overlaySmall" class="overlay-small">READY?</div>
+
+              <h2 id="overlayTitle">TARGET BLASTER</h2>
+
+              <div class="final-score-label">
+                HIT AS MANY TARGETS AS YOU CAN IN 30 SECONDS
+              </div>
+
+              <div id="finalScore" class="final-score">0</div>
+
+              <div id="recordMessage" class="record-message">🎯 Get ready!</div>
+
+              <button id="overlayButton" class="overlay-button">
+                🚀 START GAME
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="soundBtn" class="control-button">🔊 Sound On</button>
+
+          <button id="restartBtn" class="control-button restart-button">
+            🔄 Restart Game
+          </button>
+        </div>
+      </div>
+
+      <div class="instructions">
+        🖱️ Move with your mouse • ⌨️ Use ← → or A/D • 🎯 Click or press SPACE to
+        shoot
+      </div>
+
+      <a href="../index.html#games" class="back-to-games"> ← Back to Games </a>
+    </div>
+
+    <script>
+      /* =========================
+     ELEMENTS
+  ========================= */
+
+      const gameArea = document.getElementById("gameArea");
+
+      const player = document.getElementById("player");
+
+      const scoreElement = document.getElementById("score");
+
+      const bestScoreElement = document.getElementById("bestScore");
+
+      const timerElement = document.getElementById("timer");
+
+      const soundBtn = document.getElementById("soundBtn");
+
+      const restartBtn = document.getElementById("restartBtn");
+
+      const overlay = document.getElementById("overlay");
+
+      const overlayTrophy = document.getElementById("overlayTrophy");
+
+      const overlaySmall = document.getElementById("overlaySmall");
+
+      const overlayTitle = document.getElementById("overlayTitle");
+
+      const finalScore = document.getElementById("finalScore");
+
+      const recordMessage = document.getElementById("recordMessage");
+
+      const overlayButton = document.getElementById("overlayButton");
+
+      const greeting = document.getElementById("greeting");
+
+      const progressMessage = document.getElementById("progressMessage");
+
+      /* =========================
+     PLAYER NAME
+  ========================= */
+
+      const playerName = localStorage.getItem("kidsGamePlayerName");
+
+      if (playerName) {
+        greeting.textContent = "👋 Ready, " + playerName + "?";
+      }
+
+      /* =========================
+     GAME VARIABLES
+  ========================= */
+
+      let score = 0;
+
+      let bestScore = Number(localStorage.getItem("shootingBest")) || 0;
+
+      let timeLeft = 30;
+
+      let gameRunning = false;
+
+      let playerX = 50;
+
+      let targets = [];
+
+      let bullets = [];
+
+      let spawnTimer = null;
+
+      let gameTimer = null;
+
+      let animationFrame = null;
+
+      let soundOn = true;
+
+      let audioContext = null;
+
+      bestScoreElement.textContent = bestScore;
+
+      /* =========================
+     SHARED PROGRESSION
+  ========================= */
+
+      function getPlayerXP() {
+        return Number(localStorage.getItem("kidsGameXP")) || 0;
+      }
+
+      function addPlayerXP(amount) {
+        const currentXP = getPlayerXP();
+
+        const newXP = currentXP + amount;
+
+        localStorage.setItem("kidsGameXP", newXP);
+
+        return newXP;
+      }
+
+      function getGamesPlayed() {
+        return Number(localStorage.getItem("kidsGamesPlayed")) || 0;
+      }
+
+      function incrementGamesPlayed() {
+        const gamesPlayed = getGamesPlayed() + 1;
+
+        localStorage.setItem("kidsGamesPlayed", gamesPlayed);
+
+        return gamesPlayed;
+      }
+
+      function getAchievements() {
+        try {
+          return JSON.parse(localStorage.getItem("kidsAchievements")) || [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveAchievements(achievements) {
+        localStorage.setItem("kidsAchievements", JSON.stringify(achievements));
+      }
+
+      function unlockAchievement(achievementId) {
+        const achievements = getAchievements();
+
+        if (achievements.includes(achievementId)) {
+          return false;
+        }
+
+        achievements.push(achievementId);
+
+        saveAchievements(achievements);
+
+        return true;
+      }
+
+      function showProgressMessage(message) {
+        progressMessage.textContent = message;
+
+        progressMessage.classList.add("show");
+
+        setTimeout(function () {
+          progressMessage.classList.remove("show");
+        }, 2400);
+      }
+
+      function awardProgression(finalGameScore) {
+        /*
+      Target Blaster:
+      10 base XP + score XP
+      Maximum performance XP = 50
+    */
+
+        const xpEarned = 10 + Math.min(finalGameScore, 50);
+
+        const newXP = addPlayerXP(xpEarned);
+
+        const gamesPlayed = incrementGamesPlayed();
+
+        let newAchievements = [];
+
+        if (unlockAchievement("first_game")) {
+          newAchievements.push("🎮 First Game!");
+        }
+
+        if (finalGameScore >= 10 && unlockAchievement("target_blaster_10")) {
+          newAchievements.push("🎯 Sharpshooter!");
+        }
+
+        if (finalGameScore >= 25 && unlockAchievement("target_blaster_25")) {
+          newAchievements.push("🔥 Target Master!");
+        }
+
+        if (finalGameScore >= 50 && unlockAchievement("target_blaster_50")) {
+          newAchievements.push("🏆 Target Legend!");
+        }
+
+        let message = `⭐ +${xpEarned} XP`;
+
+        if (newAchievements.length > 0) {
+          message += " • " + newAchievements[0];
+        }
+
+        showProgressMessage(message);
+
+        console.log("Target Blaster progression updated:", {
+          xp: newXP,
+          gamesPlayed: gamesPlayed,
+          achievements: getAchievements(),
+        });
+      }
+
+      /* =========================
+     SOUND
+  ========================= */
+
+      function playSound(frequency, duration, type = "sine", volume = 0.06) {
+        if (!soundOn) {
+          return;
+        }
+
+        try {
+          if (!audioContext) {
+            audioContext = new (
+              window.AudioContext || window.webkitAudioContext
+            )();
+          }
+
+          if (audioContext.state === "suspended") {
+            audioContext.resume();
+          }
+
+          const oscillator = audioContext.createOscillator();
+
+          const gain = audioContext.createGain();
+
+          oscillator.type = type;
+
+          oscillator.frequency.value = frequency;
+
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+
+          gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            audioContext.currentTime + duration,
+          );
+
+          oscillator.connect(gain);
+
+          gain.connect(audioContext.destination);
+
+          oscillator.start();
+
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (error) {
+          // Audio unavailable
+        }
+      }
+
+      soundBtn.addEventListener("click", function () {
+        soundOn = !soundOn;
+
+        soundBtn.textContent = soundOn ? "🔊 Sound On" : "🔇 Sound Off";
+
+        if (soundOn) {
+          playSound(700, 0.1, "sine", 0.06);
+        }
+      });
+
+      /* =========================
+     PLAYER MOVEMENT
+  ========================= */
+
+      function movePlayer(percentage) {
+        playerX = Math.max(5, Math.min(95, percentage));
+
+        player.style.left = playerX + "%";
+      }
+
+      gameArea.addEventListener("mousemove", function (event) {
+        if (!gameRunning) {
+          return;
+        }
+
+        const rect = gameArea.getBoundingClientRect();
+
+        const percentage = ((event.clientX - rect.left) / rect.width) * 100;
+
+        movePlayer(percentage);
+      });
+
+      gameArea.addEventListener(
+        "touchmove",
+        function (event) {
+          if (!gameRunning) {
+            return;
+          }
+
+          event.preventDefault();
+
+          const touch = event.touches[0];
+
+          const rect = gameArea.getBoundingClientRect();
+
+          const percentage = ((touch.clientX - rect.left) / rect.width) * 100;
+
+          movePlayer(percentage);
+        },
+        {
+          passive: false,
+        },
+      );
+
+      document.addEventListener("keydown", function (event) {
+        if (!gameRunning) {
+          return;
+        }
+
+        if (event.key === "ArrowLeft" || event.key.toLowerCase() === "a") {
+          event.preventDefault();
+
+          movePlayer(playerX - 8);
+        }
+
+        if (event.key === "ArrowRight" || event.key.toLowerCase() === "d") {
+          event.preventDefault();
+
+          movePlayer(playerX + 8);
+        }
+
+        if (event.code === "Space") {
+          event.preventDefault();
+
+          shoot();
+        }
+      });
+
+      /* =========================
+     SHOOT
+  ========================= */
+
+      gameArea.addEventListener("click", function (event) {
+        if (!gameRunning) {
+          return;
+        }
+
+        if (event.target === gameArea || event.target === player) {
+          shoot();
+        }
+      });
+
+      function shoot() {
+        if (!gameRunning) {
+          return;
+        }
+
+        const bullet = document.createElement("div");
+
+        bullet.className = "bullet";
+
+        const playerRect = player.getBoundingClientRect();
+
+        const areaRect = gameArea.getBoundingClientRect();
+
+        const x = playerRect.left - areaRect.left + playerRect.width / 2 - 3.5;
+
+        const y = playerRect.top - areaRect.top - 10;
+
+        bullet.style.left = x + "px";
+
+        bullet.style.top = y + "px";
+
+        gameArea.appendChild(bullet);
+
+        bullets.push({
+          element: bullet,
+          x: x,
+          y: y,
+        });
+
+        playSound(620, 0.07, "square", 0.045);
+      }
+
+      /* =========================
+     CREATE TARGET
+  ========================= */
+
+      function createTarget() {
+        if (!gameRunning) {
+          return;
+        }
+
+        const target = document.createElement("div");
+
+        target.className = "target";
+
+        const size = 42;
+
+        const maxX = gameArea.clientWidth - size;
+
+        const x = Math.random() * maxX;
+
+        const y = -50;
+
+        target.style.left = x + "px";
+
+        target.style.top = y + "px";
+
+        gameArea.appendChild(target);
+
+        targets.push({
+          element: target,
+          x: x,
+          y: y,
+        });
+      }
+
+      /* =========================
+     GAME LOOP
+  ========================= */
+
+      function gameLoop() {
+        if (!gameRunning) {
+          return;
+        }
+
+        const targetSpeed = 1.8 + score * 0.12;
+
+        for (let i = targets.length - 1; i >= 0; i--) {
+          const target = targets[i];
+
+          target.y += targetSpeed;
+
+          target.element.style.top = target.y + "px";
+
+          if (target.y > gameArea.clientHeight - 20) {
+            target.element.remove();
+
+            targets.splice(i, 1);
+
+            continue;
+          }
+        }
+
+        for (let i = bullets.length - 1; i >= 0; i--) {
+          const bullet = bullets[i];
+
+          bullet.y -= 8;
+
+          bullet.element.style.top = bullet.y + "px";
+
+          if (bullet.y < -25) {
+            bullet.element.remove();
+
+            bullets.splice(i, 1);
+
+            continue;
+          }
+
+          for (let j = targets.length - 1; j >= 0; j--) {
+            const target = targets[j];
+
+            const dx = bullet.x - (target.x + 21);
+
+            const dy = bullet.y - (target.y + 21);
+
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 27) {
+              target.element.remove();
+
+              targets.splice(j, 1);
+
+              bullet.element.remove();
+
+              bullets.splice(i, 1);
+
+              score++;
+
+              scoreElement.textContent = score;
+
+              if (score > bestScore) {
+                bestScore = score;
+
+                bestScoreElement.textContent = bestScore;
+              }
+
+              playSound(850, 0.1, "sine", 0.07);
+
+              break;
+            }
+          }
+        }
+
+        animationFrame = requestAnimationFrame(gameLoop);
+      }
+
+      /* =========================
+     START GAME
+  ========================= */
+
+      function startGame() {
+        clearInterval(spawnTimer);
+
+        clearInterval(gameTimer);
+
+        cancelAnimationFrame(animationFrame);
+
+        document
+          .querySelectorAll(".target, .bullet")
+          .forEach((element) => element.remove());
+
+        targets = [];
+
+        bullets = [];
+
+        score = 0;
+
+        timeLeft = 30;
+
+        playerX = 50;
+
+        gameRunning = true;
+
+        player.style.left = "50%";
+
+        scoreElement.textContent = "0";
+
+        timerElement.textContent = "30";
+
+        bestScoreElement.textContent = bestScore;
+
+        overlay.classList.add("hidden");
+
+        createTarget();
+
+        createTarget();
+
+        createTarget();
+
+        spawnTimer = setInterval(function () {
+          if (!gameRunning) {
+            return;
+          }
+
+          const count = 1 + Math.floor(score / 5);
+
+          for (let i = 0; i < count; i++) {
+            createTarget();
+          }
+        }, 850);
+
+        gameTimer = setInterval(function () {
+          timeLeft--;
+
+          timerElement.textContent = timeLeft;
+
+          if (timeLeft <= 5 && timeLeft > 0) {
+            playSound(500, 0.08, "square", 0.04);
+          }
+
+          if (timeLeft <= 0) {
+            endGame();
+          }
+        }, 1000);
+
+        playSound(500, 0.1, "sine", 0.05);
+
+        gameLoop();
+      }
+
+      /* =========================
+     END GAME
+  ========================= */
+
+      function endGame() {
+        if (!gameRunning) {
+          return;
+        }
+
+        gameRunning = false;
+
+        clearInterval(spawnTimer);
+
+        clearInterval(gameTimer);
+
+        cancelAnimationFrame(animationFrame);
+
+        document
+          .querySelectorAll(".target, .bullet")
+          .forEach((element) => element.remove());
+
+        const oldBest = Number(localStorage.getItem("shootingBest")) || 0;
+
+        const isNewRecord = score > oldBest;
+
+        if (isNewRecord) {
+          bestScore = score;
+
+          localStorage.setItem("shootingBest", score);
+        } else {
+          bestScore = oldBest;
+        }
+
+        bestScoreElement.textContent = bestScore;
+
+        finalScore.textContent = score;
+
+        if (isNewRecord) {
+          overlayTrophy.textContent = "🏆";
+
+          overlaySmall.textContent = "NEW RECORD!";
+
+          overlayTitle.textContent = "AMAZING SHOT!";
+
+          recordMessage.textContent = "🎉 You beat your best score!";
+        } else {
+          overlayTrophy.textContent = "🎯";
+
+          overlaySmall.textContent = "TIME'S UP!";
+
+          overlayTitle.textContent = "GREAT RUN!";
+
+          recordMessage.textContent = "⭐ Best Score: " + bestScore;
+        }
+
+        overlayButton.textContent = "🚀 PLAY AGAIN";
+
+        /*
+      Award shared player
+      progression after the
+      completed 30-second game.
+    */
+        awardProgression(score);
+
+        overlay.classList.remove("hidden");
+
+        playSound(
+          isNewRecord ? 950 : 250,
+          0.3,
+          isNewRecord ? "sine" : "square",
+          0.08,
+        );
+      }
+
+      /* =========================
+     BUTTONS
+  ========================= */
+
+      overlayButton.addEventListener("click", function () {
+        startGame();
+      });
+
+      restartBtn.addEventListener("click", function () {
+        startGame();
+      });
+
+      /* =========================
+     INITIAL STATE
+  ========================= */
+
+      overlay.classList.remove("hidden");
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1226 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Quick Math - Kids Game Hub</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        color: white;
+        background: radial-gradient(
+          circle at top,
+          #27245a 0%,
+          #15142f 45%,
+          #0b0b1b 100%
+        );
+      }
+
+      .page {
+        width: min(800px, 92%);
+        margin: auto;
+        padding: 20px 0 25px;
+      }
+
+      .top {
+        text-align: center;
+        margin-bottom: 14px;
+      }
+
+      .game-label {
+        color: #74b9ff;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+      }
+
+      h1 {
+        font-size: clamp(28px, 5vw, 42px);
+        font-weight: 900;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .greeting {
+        margin-top: 5px;
+        color: #c9c7df;
+        font-size: 14px;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .hud-box {
+        background: rgba(20, 19, 50, 0.9);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 14px;
+        padding: 8px;
+        text-align: center;
+      }
+
+      .hud-label {
+        color: #aaa8c5;
+        font-size: 9px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      .hud-value {
+        margin-top: 3px;
+        font-size: 20px;
+        font-weight: 900;
+      }
+
+      .game-card {
+        position: relative;
+        background: rgba(15, 15, 38, 0.94);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 22px;
+        padding: 12px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.35),
+          0 0 30px rgba(108, 99, 217, 0.08);
+      }
+
+      #gameArea {
+        position: relative;
+        min-height: 360px;
+        overflow: hidden;
+        border-radius: 17px;
+        background: radial-gradient(
+          circle at center,
+          #222052 0%,
+          #12112d 60%,
+          #0b0b1b 100%
+        );
+        border: 1px solid rgba(116, 185, 255, 0.2);
+        touch-action: manipulation;
+      }
+
+      .math-content {
+        min-height: 360px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 25px;
+      }
+
+      .question-label {
+        color: #aaa8c5;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        margin-bottom: 12px;
+      }
+
+      .question {
+        min-height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: clamp(38px, 8vw, 58px);
+        font-weight: 900;
+        letter-spacing: 2px;
+        background: linear-gradient(90deg, #ffffff, #b8b0ff, #74cfff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .streak {
+        min-height: 24px;
+        margin-top: 5px;
+        color: #55c88a;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .answers {
+        width: min(500px, 100%);
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .answer-button {
+        min-height: 58px;
+        border: 1px solid rgba(129, 117, 232, 0.4);
+        border-radius: 14px;
+        color: white;
+        background: linear-gradient(
+          135deg,
+          rgba(39, 36, 90, 0.95),
+          rgba(28, 26, 66, 0.95)
+        );
+        font-size: 20px;
+        font-weight: 900;
+        cursor: pointer;
+        transition:
+          transform 0.15s,
+          border-color 0.15s,
+          background 0.15s;
+      }
+
+      .answer-button:hover {
+        transform: translateY(-2px);
+        border-color: #8175e8;
+      }
+
+      .answer-button.correct {
+        background: rgba(85, 200, 138, 0.2);
+        border-color: #55c88a;
+      }
+
+      .answer-button.wrong {
+        background: rgba(255, 80, 100, 0.18);
+        border-color: #ff6075;
+      }
+
+      .answer-button:disabled {
+        cursor: default;
+      }
+
+      .question-number {
+        margin-top: 14px;
+        color: #77778d;
+        font-size: 11px;
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      .control-button {
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        color: white;
+        padding: 10px 17px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+
+      .control-button:hover {
+        transform: translateY(-2px);
+        border-color: #8175e8;
+      }
+
+      .restart-button {
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+        border-color: transparent;
+      }
+
+      .instructions {
+        text-align: center;
+        color: #9290aa;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: rgba(8, 8, 25, 0.78);
+        backdrop-filter: blur(8px);
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      .overlay-box {
+        width: min(390px, 90%);
+        padding: 25px 20px;
+        text-align: center;
+        border-radius: 22px;
+        background: rgba(25, 23, 59, 0.97);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .trophy {
+        font-size: 48px;
+        margin-bottom: 7px;
+      }
+
+      .overlay-small {
+        color: #74b9ff;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+
+      .overlay-box h2 {
+        margin-top: 5px;
+        font-size: 27px;
+      }
+
+      .final-score-label {
+        color: #aaa8c5;
+        font-size: 11px;
+        margin-top: 15px;
+        letter-spacing: 1px;
+      }
+
+      .final-score {
+        font-size: 45px;
+        font-weight: 900;
+        margin-top: 2px;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .record-message {
+        color: #55c88a;
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 5px;
+        min-height: 20px;
+      }
+
+      .overlay-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .overlay-button {
+        border: none;
+        padding: 11px 22px;
+        border-radius: 12px;
+        color: white;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        background: linear-gradient(135deg, #6c63d9, #5f9ee9);
+      }
+
+      .overlay-actions .overlay-button {
+        margin-top: 0;
+      }
+
+      .overlay-button.close-button {
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+      }
+
+      .back-to-games {
+        display: block;
+        width: fit-content;
+        margin: 10px auto 0;
+        padding: 9px 15px;
+        border-radius: 9px;
+        color: #cfcdf4;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        transition: 0.2s ease;
+      }
+
+      .back-to-games:hover {
+        color: white;
+        background: rgba(129, 117, 232, 0.18);
+        border-color: rgba(129, 117, 232, 0.4);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 600px) {
+        .page {
+          padding: 15px 0 20px;
+        }
+
+        #gameArea {
+          min-height: 330px;
+        }
+
+        .math-content {
+          min-height: 330px;
+          padding: 18px;
+        }
+
+        .hud {
+          gap: 5px;
+        }
+
+        .hud-box {
+          padding: 7px 4px;
+        }
+
+        .hud-value {
+          font-size: 17px;
+        }
+
+        .control-button {
+          padding: 9px 13px;
+          font-size: 12px;
+        }
+
+        .answer-button {
+          min-height: 55px;
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="top">
+        <div class="game-label">🧠 GAME 09 • BRAIN</div>
+
+        <h1>Quick Math</h1>
+
+        <div id="greeting" class="greeting">Ready, Player!</div>
+      </div>
+
+      <div class="hud">
+        <div class="hud-box">
+          <div class="hud-label">SCORE</div>
+          <div id="score" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">BEST</div>
+          <div id="bestScore" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">TIME</div>
+          <div id="time" class="hud-value">30</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">STREAK</div>
+          <div id="streak" class="hud-value">0</div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div id="gameArea">
+          <div class="math-content">
+            <div class="question-label">SOLVE THIS!</div>
+
+            <div id="question" class="question">READY?</div>
+
+            <div id="streakMessage" class="streak"></div>
+
+            <div id="answers" class="answers">
+              <button class="answer-button" data-index="0">?</button>
+
+              <button class="answer-button" data-index="1">?</button>
+
+              <button class="answer-button" data-index="2">?</button>
+
+              <button class="answer-button" data-index="3">?</button>
+            </div>
+
+            <div id="questionNumber" class="question-number">Question 0</div>
+          </div>
+
+          <div id="overlay" class="overlay">
+            <div class="overlay-box">
+              <div id="overlayTrophy" class="trophy">🧠</div>
+
+              <div id="overlaySmall" class="overlay-small">READY?</div>
+
+              <h2 id="overlayTitle">QUICK MATH</h2>
+
+              <div class="final-score-label">
+                SOLVE AS MANY AS YOU CAN IN 30 SECONDS
+              </div>
+
+              <div id="finalScore" class="final-score">0</div>
+
+              <div id="recordMessage" class="record-message">🎮 Good luck!</div>
+
+              <div class="overlay-actions">
+                <button id="overlayButton" class="overlay-button">
+                  🚀 START GAME
+                </button>
+
+                <button id="closeButton" class="overlay-button close-button">
+                  ✕ CLOSE
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="soundBtn" class="control-button">🔊 Sound On</button>
+
+          <button id="restartBtn" class="control-button restart-button">
+            🔄 Restart Game
+          </button>
+        </div>
+
+        <div class="instructions">
+          🖱️ Click • ⌨️ Keys 1-4 • 📱 Tap an answer
+        </div>
+      </div>
+
+      <a href="../index.html#games" class="back-to-games"> ← Back to Games </a>
+    </div>
+
+    <script>
+      const gameArea = document.getElementById("gameArea");
+
+      const overlay = document.getElementById("overlay");
+
+      const overlayButton = document.getElementById("overlayButton");
+
+      const closeButton = document.getElementById("closeButton");
+
+      const restartBtn = document.getElementById("restartBtn");
+
+      const soundBtn = document.getElementById("soundBtn");
+
+      const questionElement = document.getElementById("question");
+
+      const answersContainer = document.getElementById("answers");
+
+      const answerButtons = document.querySelectorAll(".answer-button");
+
+      const scoreElement = document.getElementById("score");
+
+      const bestElement = document.getElementById("bestScore");
+
+      const timeElement = document.getElementById("time");
+
+      const streakElement = document.getElementById("streak");
+
+      const streakMessage = document.getElementById("streakMessage");
+
+      const questionNumberElement = document.getElementById("questionNumber");
+
+      const finalScoreElement = document.getElementById("finalScore");
+
+      const recordMessage = document.getElementById("recordMessage");
+
+      const overlayTrophy = document.getElementById("overlayTrophy");
+
+      const overlaySmall = document.getElementById("overlaySmall");
+
+      const overlayTitle = document.getElementById("overlayTitle");
+
+      const greeting = document.getElementById("greeting");
+
+      let score = 0;
+
+      let bestScore = Number(localStorage.getItem("quickMathBest")) || 0;
+
+      let timeLeft = 30;
+
+      let streak = 0;
+
+      let questionNumber = 0;
+
+      let correctAnswer = 0;
+
+      let running = false;
+
+      let soundOn = true;
+
+      let timer = null;
+
+      let audioContext = null;
+
+      /*
+      ==========================================
+      PROGRESSION STATE
+      ==========================================
+      */
+
+      let progressionAwarded = false;
+
+      /*
+      ==========================================
+      INITIAL BEST
+      ==========================================
+      */
+
+      bestElement.textContent = bestScore;
+
+      /*
+      ==========================================
+      PLAYER NAME
+      ==========================================
+      */
+
+      const savedName = localStorage.getItem("kidsGamePlayerName");
+
+      if (savedName) {
+        greeting.textContent = `Ready, ${savedName}!`;
+      }
+
+      /*
+      ==========================================
+      SHARED PROGRESSION
+      ==========================================
+      */
+
+      function getPlayerXP() {
+        return Number(localStorage.getItem("kidsGameXP")) || 0;
+      }
+
+      function addPlayerXP(amount) {
+        const currentXP = getPlayerXP();
+
+        const newXP = currentXP + amount;
+
+        localStorage.setItem("kidsGameXP", newXP);
+
+        return newXP;
+      }
+
+      function getGamesPlayed() {
+        return Number(localStorage.getItem("kidsGamesPlayed")) || 0;
+      }
+
+      function incrementGamesPlayed() {
+        const gamesPlayed = getGamesPlayed() + 1;
+
+        localStorage.setItem("kidsGamesPlayed", gamesPlayed);
+
+        return gamesPlayed;
+      }
+
+      function getAchievements() {
+        try {
+          return JSON.parse(localStorage.getItem("kidsAchievements")) || [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveAchievements(achievements) {
+        localStorage.setItem("kidsAchievements", JSON.stringify(achievements));
+      }
+
+      function unlockAchievement(achievementId) {
+        const achievements = getAchievements();
+
+        if (achievements.includes(achievementId)) {
+          return false;
+        }
+
+        achievements.push(achievementId);
+
+        saveAchievements(achievements);
+
+        return true;
+      }
+
+      /*
+      ==========================================
+      QUICK MATH PROGRESSION
+      ==========================================
+      */
+
+      function awardProgression(finalScore) {
+        if (progressionAwarded) {
+          return;
+        }
+
+        progressionAwarded = true;
+
+        const xpEarned = 10 + Math.min(finalScore, 50);
+
+        addPlayerXP(xpEarned);
+
+        incrementGamesPlayed();
+
+        const newAchievements = [];
+
+        if (unlockAchievement("quick_math_first")) {
+          newAchievements.push("🧠 Math Starter!");
+        }
+
+        if (finalScore >= 15 && unlockAchievement("quick_math_15")) {
+          newAchievements.push("⭐ Quick Thinker!");
+        }
+
+        if (finalScore >= 30 && unlockAchievement("quick_math_30")) {
+          newAchievements.push("🔥 Math Master!");
+        }
+
+        if (finalScore >= 50 && unlockAchievement("quick_math_50")) {
+          newAchievements.push("🏆 Math Legend!");
+        }
+
+        let progressionMessage = `⭐ +${xpEarned} XP`;
+
+        if (newAchievements.length > 0) {
+          progressionMessage += ` • ${newAchievements[0]}`;
+        }
+
+        return progressionMessage;
+      }
+
+      /*
+      ==========================================
+      SOUND
+      ==========================================
+      */
+
+      function playSound(frequency, duration, type, volume) {
+        if (!soundOn) {
+          return;
+        }
+
+        try {
+          if (!audioContext) {
+            audioContext = new (
+              window.AudioContext || window.webkitAudioContext
+            )();
+          }
+
+          if (audioContext.state === "suspended") {
+            audioContext.resume();
+          }
+
+          const oscillator = audioContext.createOscillator();
+
+          const gain = audioContext.createGain();
+
+          oscillator.type = type || "sine";
+
+          oscillator.frequency.value = frequency;
+
+          gain.gain.setValueAtTime(volume || 0.05, audioContext.currentTime);
+
+          gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            audioContext.currentTime + duration,
+          );
+
+          oscillator.connect(gain);
+
+          gain.connect(audioContext.destination);
+
+          oscillator.start();
+
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (error) {}
+      }
+
+      soundBtn.addEventListener("click", function () {
+        soundOn = !soundOn;
+
+        soundBtn.textContent = soundOn ? "🔊 Sound On" : "🔇 Sound Off";
+
+        if (soundOn) {
+          playSound(600, 0.08, "sine", 0.05);
+        }
+      });
+
+      /*
+      ==========================================
+      RANDOM HELPERS
+      ==========================================
+      */
+
+      function randomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+
+        return array;
+      }
+
+      /*
+      ==========================================
+      QUESTION GENERATOR
+      ==========================================
+      */
+
+      function generateQuestion() {
+        let a;
+
+        let b;
+
+        let answer;
+
+        let operator;
+
+        /*
+        Difficulty increases with score.
+        */
+
+        if (score < 5) {
+          operator = Math.random() < 0.6 ? "+" : "-";
+
+          a = randomInt(1, 10);
+
+          b = randomInt(1, 10);
+        } else if (score < 12) {
+          const type = randomInt(1, 3);
+
+          if (type === 1) {
+            operator = "+";
+
+            a = randomInt(5, 25);
+
+            b = randomInt(5, 25);
+          } else if (type === 2) {
+            operator = "-";
+
+            a = randomInt(10, 30);
+
+            b = randomInt(1, a);
+          } else {
+            operator = "×";
+
+            a = randomInt(2, 9);
+
+            b = randomInt(2, 9);
+          }
+        } else if (score < 20) {
+          const type = randomInt(1, 3);
+
+          if (type === 1) {
+            operator = "+";
+
+            a = randomInt(10, 50);
+
+            b = randomInt(10, 50);
+          } else if (type === 2) {
+            operator = "-";
+
+            a = randomInt(20, 70);
+
+            b = randomInt(5, a);
+          } else {
+            operator = "×";
+
+            a = randomInt(3, 12);
+
+            b = randomInt(2, 10);
+          }
+        } else {
+          const type = randomInt(1, 3);
+
+          if (type === 1) {
+            operator = "+";
+
+            a = randomInt(20, 100);
+
+            b = randomInt(20, 100);
+          } else if (type === 2) {
+            operator = "-";
+
+            a = randomInt(40, 120);
+
+            b = randomInt(10, a);
+          } else {
+            operator = "×";
+
+            a = randomInt(5, 15);
+
+            b = randomInt(3, 12);
+          }
+        }
+
+        if (operator === "+") {
+          answer = a + b;
+        } else if (operator === "-") {
+          answer = a - b;
+        } else {
+          answer = a * b;
+        }
+
+        correctAnswer = answer;
+
+        questionElement.textContent = `${a} ${operator} ${b} = ?`;
+
+        questionNumber++;
+
+        questionNumberElement.textContent = `Question ${questionNumber}`;
+
+        createAnswers(answer);
+      }
+
+      /*
+      ==========================================
+      ANSWERS
+      ==========================================
+      */
+
+      function createAnswers(answer) {
+        const answers = [answer];
+
+        while (answers.length < 4) {
+          const spread = Math.max(3, Math.floor(Math.abs(answer) * 0.25));
+
+          let wrong = answer + randomInt(-spread, spread);
+
+          if (wrong === answer) {
+            wrong += randomInt(1, 5);
+          }
+
+          if (wrong < 0) {
+            wrong = Math.abs(wrong) + 1;
+          }
+
+          if (!answers.includes(wrong)) {
+            answers.push(wrong);
+          }
+        }
+
+        shuffle(answers);
+
+        answerButtons.forEach(function (button, index) {
+          button.textContent = answers[index];
+
+          button.dataset.answer = answers[index];
+
+          button.disabled = false;
+
+          button.classList.remove("correct", "wrong");
+        });
+      }
+
+      /*
+      ==========================================
+      ANSWER CLICK
+      ==========================================
+      */
+
+      answerButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+          if (!running) {
+            return;
+          }
+
+          checkAnswer(Number(button.dataset.answer), button);
+        });
+      });
+
+      function checkAnswer(selectedAnswer, clickedButton) {
+        if (!running) {
+          return;
+        }
+
+        answerButtons.forEach(function (button) {
+          button.disabled = true;
+        });
+
+        if (selectedAnswer === correctAnswer) {
+          score++;
+
+          streak++;
+
+          clickedButton.classList.add("correct");
+
+          playSound(720, 0.1, "sine", 0.07);
+
+          if (streak >= 3) {
+            streakMessage.textContent = `🔥 ${streak} IN A ROW!`;
+
+            playSound(950, 0.12, "triangle", 0.05);
+          } else {
+            streakMessage.textContent = "";
+          }
+        } else {
+          streak = 0;
+
+          clickedButton.classList.add("wrong");
+
+          answerButtons.forEach(function (button) {
+            if (Number(button.dataset.answer) === correctAnswer) {
+              button.classList.add("correct");
+            }
+          });
+
+          streakMessage.textContent = "❌ Try the next one!";
+
+          playSound(180, 0.15, "square", 0.06);
+        }
+
+        scoreElement.textContent = score;
+
+        streakElement.textContent = streak;
+
+        /*
+        Update live best.
+        */
+
+        if (score > bestScore) {
+          bestScore = score;
+
+          bestElement.textContent = bestScore;
+        }
+
+        setTimeout(function () {
+          if (running) {
+            generateQuestion();
+          }
+        }, 220);
+      }
+
+      /*
+      ==========================================
+      KEYBOARD 1-4
+      ==========================================
+      */
+
+      document.addEventListener("keydown", function (event) {
+        if (!running) {
+          return;
+        }
+
+        const key = Number(event.key);
+
+        if (key >= 1 && key <= 4) {
+          const button = answerButtons[key - 1];
+
+          if (button && !button.disabled) {
+            button.click();
+          }
+        }
+      });
+
+      /*
+      ==========================================
+      TIMER
+      ==========================================
+      */
+
+      function startTimer() {
+        clearInterval(timer);
+
+        timer = setInterval(function () {
+          if (!running) {
+            return;
+          }
+
+          timeLeft--;
+
+          timeElement.textContent = timeLeft;
+
+          if (timeLeft <= 5) {
+            timeElement.style.color = "#ff6075";
+          } else {
+            timeElement.style.color = "white";
+          }
+
+          if (timeLeft <= 0) {
+            endGame();
+          }
+        }, 1000);
+      }
+
+      /*
+      ==========================================
+      START GAME
+      ==========================================
+      */
+
+      function startGame() {
+        clearInterval(timer);
+
+        progressionAwarded = false;
+
+        score = 0;
+
+        timeLeft = 30;
+
+        streak = 0;
+
+        questionNumber = 0;
+
+        running = true;
+
+        scoreElement.textContent = "0";
+
+        bestElement.textContent = bestScore;
+
+        timeElement.textContent = "30";
+
+        timeElement.style.color = "white";
+
+        streakElement.textContent = "0";
+
+        streakMessage.textContent = "";
+
+        overlay.classList.add("hidden");
+
+        generateQuestion();
+
+        startTimer();
+
+        playSound(500, 0.1, "sine", 0.05);
+      }
+
+      /*
+      ==========================================
+      END GAME
+      ==========================================
+      */
+
+      function endGame() {
+        if (!running) {
+          return;
+        }
+
+        running = false;
+
+        clearInterval(timer);
+
+        answerButtons.forEach(function (button) {
+          button.disabled = true;
+        });
+
+        const oldBest = Number(localStorage.getItem("quickMathBest")) || 0;
+
+        const isNewRecord = score > oldBest;
+
+        if (isNewRecord) {
+          bestScore = score;
+
+          localStorage.setItem("quickMathBest", score);
+
+          bestElement.textContent = bestScore;
+
+          overlayTrophy.textContent = "🏆";
+
+          overlaySmall.textContent = "NEW RECORD!";
+
+          overlayTitle.textContent = "AMAZING!";
+
+          recordMessage.textContent = "🎉 New best score!";
+
+          playSound(1000, 0.2, "triangle", 0.08);
+        } else {
+          bestScore = oldBest;
+
+          bestElement.textContent = bestScore;
+
+          overlayTrophy.textContent = "🧠";
+
+          overlaySmall.textContent = "TIME'S UP!";
+
+          overlayTitle.textContent = "QUICK MATH";
+
+          recordMessage.textContent = `🏆 Best score: ${bestScore}`;
+
+          playSound(220, 0.2, "sine", 0.06);
+        }
+
+        /*
+        ==========================================
+        AWARD SHARED PROGRESSION
+        ==========================================
+        */
+
+        const progressionMessage = awardProgression(score);
+
+        if (progressionMessage) {
+          recordMessage.textContent = isNewRecord
+            ? `🎉 New best score! • ${progressionMessage}`
+            : `${progressionMessage} • 🏆 Best score: ${bestScore}`;
+        }
+
+        finalScoreElement.textContent = score;
+
+        overlayButton.textContent = "🚀 PLAY AGAIN";
+
+        overlay.classList.remove("hidden");
+      }
+
+      /*
+      ==========================================
+      RESTART
+      ==========================================
+      */
+
+      restartBtn.addEventListener("click", startGame);
+
+      overlayButton.addEventListener("click", startGame);
+
+      /*
+      ==========================================
+      CLOSE
+      ==========================================
+      */
+
+      closeButton.addEventListener("click", function () {
+        running = false;
+
+        clearInterval(timer);
+
+        answerButtons.forEach(function (button) {
+          button.disabled = true;
+        });
+
+        overlay.classList.add("hidden");
+
+        questionElement.textContent = "READY?";
+
+        questionNumberElement.textContent = "Question 0";
+
+        scoreElement.textContent = "0";
+
+        timeElement.textContent = "30";
+
+        timeElement.style.color = "white";
+
+        streakElement.textContent = "0";
+
+        streakMessage.textContent = "";
+      });
+
+      /*
+      ==========================================
+      INITIAL STATE
+      ==========================================
+      */
+
+      answerButtons.forEach(function (button) {
+        button.disabled = true;
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Contact Us | Kids Game Hub</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        color: white;
+        background: radial-gradient(
+          circle at top,
+          #27245a 0%,
+          #15142f 45%,
+          #0b0b1b 100%
+        );
+      }
+
+      .page {
+        width: min(700px, 92%);
+        margin: auto;
+        padding: 35px 0 50px;
+      }
+
+      .top {
+        text-align: center;
+        margin-bottom: 25px;
+      }
+
+      .logo {
+        display: inline-block;
+        color: #8175e8;
+        text-decoration: none;
+        font-size: 20px;
+        font-weight: 900;
+        text-shadow: 0 0 18px rgba(129, 117, 232, 0.35);
+        margin-bottom: 20px;
+      }
+
+      .label {
+        color: #74b9ff;
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 2px;
+      }
+
+      h1 {
+        margin-top: 6px;
+        font-size: clamp(30px, 6vw, 44px);
+        font-weight: 900;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .subtitle {
+        max-width: 500px;
+        margin: 10px auto 0;
+        color: #9290aa;
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .contact-card {
+        padding: 30px;
+        text-align: center;
+        border-radius: 22px;
+        background: rgba(15, 15, 38, 0.94);
+        border: 1px solid rgba(129, 117, 232, 0.3);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      }
+
+      .contact-icon {
+        font-size: 50px;
+        margin-bottom: 10px;
+      }
+
+      .contact-card h2 {
+        font-size: 22px;
+        font-weight: 900;
+      }
+
+      .contact-card p {
+        margin-top: 8px;
+        color: #9290aa;
+        font-size: 12px;
+        line-height: 1.7;
+      }
+
+      .email-box {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 13px 20px;
+        border-radius: 12px;
+        color: white;
+        text-decoration: none;
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+        font-size: 13px;
+        font-weight: 900;
+        transition: 0.2s ease;
+      }
+
+      .email-box:hover {
+        transform: translateY(-2px);
+      }
+
+      .topics {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .topics h3 {
+        color: #74b9ff;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .topics p {
+        margin-top: 7px;
+        color: #aaa8c5;
+        font-size: 11px;
+        line-height: 1.7;
+      }
+
+      .back {
+        display: block;
+        width: fit-content;
+        margin: 20px auto 0;
+        padding: 10px 16px;
+        border-radius: 10px;
+        color: white;
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(129, 117, 232, 0.3);
+        font-size: 11px;
+        font-weight: 900;
+        transition: 0.2s ease;
+      }
+
+      .back:hover {
+        transform: translateY(-2px);
+        background: rgba(129, 117, 232, 0.15);
+      }
+
+      footer {
+        margin-top: 25px;
+        text-align: center;
+        color: #5f5d76;
+        font-size: 9px;
+      }
+
+      @media (max-width: 600px) {
+        .page {
+          padding-top: 25px;
+        }
+
+        .contact-card {
+          padding: 25px 18px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="page">
+      <div class="top">
+        <a href="index.html" class="logo">🎮 Kids Game Hub</a>
+
+        <div class="label">GET IN TOUCH</div>
+
+        <h1>CONTACT US</h1>
+
+        <p class="subtitle">
+          Have a question, found a bug, or have an idea for a new game? We'd
+          love to hear from you.
+        </p>
+      </div>
+
+      <div class="contact-card">
+        <div class="contact-icon">📩</div>
+
+        <h2>LET'S TALK</h2>
+
+        <p>
+          For questions, feedback, suggestions, bug reports or business
+          inquiries, you can contact the Kids Game Hub team by email.
+        </p>
+
+        <a href="mailto:hello@kidsgamehub.com" class="email-box">
+          ✉️ hello@kidsgamehub.com
+        </a>
+
+        <div class="topics">
+          <h3>YOU CAN CONTACT US ABOUT</h3>
+
+          <p>
+            🎮 Game feedback &nbsp; • &nbsp; 🐛 Bug reports &nbsp; • &nbsp; 💡
+            Game ideas &nbsp; • &nbsp; 🤝 Partnerships &nbsp; • &nbsp; 📩
+            General questions
+          </p>
+        </div>
+      </div>
+
+      <a href="index.html" class="back"> ← BACK TO KIDS GAME HUB </a>
+
+      <footer>🎮 Kids Game Hub</footer>
+    </main>
+  </body>
+</html>

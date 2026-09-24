@@ -1,0 +1,1170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Whack-a-Mole | Kids Game Hub</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        color: white;
+        background: radial-gradient(
+          circle at top,
+          #27245a 0%,
+          #15142f 45%,
+          #0b0b1b 100%
+        );
+      }
+
+      .page {
+        width: min(800px, 92%);
+        margin: auto;
+        padding: 20px 0 25px;
+      }
+
+      .top {
+        text-align: center;
+        margin-bottom: 14px;
+      }
+
+      .game-label {
+        color: #74b9ff;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+      }
+
+      h1 {
+        font-size: clamp(28px, 5vw, 42px);
+        font-weight: 900;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .greeting {
+        margin-top: 5px;
+        color: #c9c7df;
+        font-size: 14px;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .hud-box {
+        background: rgba(20, 19, 50, 0.9);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 14px;
+        padding: 8px;
+        text-align: center;
+      }
+
+      .hud-label {
+        color: #aaa8c5;
+        font-size: 9px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      .hud-value {
+        margin-top: 3px;
+        font-size: 20px;
+        font-weight: 900;
+      }
+
+      .game-card {
+        position: relative;
+        background: rgba(15, 15, 38, 0.94);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 22px;
+        padding: 12px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.35),
+          0 0 30px rgba(108, 99, 217, 0.08);
+      }
+
+      #gameArea {
+        position: relative;
+        height: 360px;
+        overflow: hidden;
+        border-radius: 17px;
+        background: radial-gradient(
+          circle at center,
+          #222052 0%,
+          #12112d 60%,
+          #0b0b1b 100%
+        );
+        border: 1px solid rgba(116, 185, 255, 0.2);
+        touch-action: none;
+      }
+
+      /* HOLES */
+
+      .hole {
+        position: absolute;
+        width: 100px;
+        height: 55px;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        background: radial-gradient(
+          ellipse at center,
+          #05050e 0%,
+          #0b0b18 55%,
+          #1b1940 100%
+        );
+        border: 2px solid rgba(129, 117, 232, 0.25);
+        box-shadow:
+          inset 0 7px 15px rgba(0, 0, 0, 0.8),
+          0 5px 15px rgba(0, 0, 0, 0.25);
+      }
+
+      /* MOLE */
+
+      .mole {
+        position: absolute;
+        width: 76px;
+        height: 76px;
+        transform: translate(-50%, -50%) scale(0);
+        border-radius: 50%;
+        background: radial-gradient(
+          circle at 35% 28%,
+          #a87961 0%,
+          #805642 45%,
+          #55372d 100%
+        );
+        border: 3px solid rgba(255, 255, 255, 0.18);
+        box-shadow:
+          0 5px 18px rgba(0, 0, 0, 0.5),
+          0 0 20px rgba(129, 117, 232, 0.2);
+        cursor: pointer;
+        z-index: 5;
+        transition: transform 0.13s ease;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .mole.show {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      .mole.hit {
+        transform: translate(-50%, -50%) scale(0.72);
+        opacity: 0.7;
+      }
+
+      .mole::before,
+      .mole::after {
+        content: "";
+        position: absolute;
+        top: 27px;
+        width: 9px;
+        height: 13px;
+        border-radius: 50%;
+        background: #171018;
+      }
+
+      .mole::before {
+        left: 21px;
+      }
+
+      .mole::after {
+        right: 21px;
+      }
+
+      .mole-face {
+        position: absolute;
+        left: 50%;
+        top: 43px;
+        transform: translateX(-50%);
+        width: 28px;
+        height: 14px;
+      }
+
+      .mole-face::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%);
+        width: 10px;
+        height: 7px;
+        border-radius: 50%;
+        background: #e7a4a0;
+      }
+
+      .mole-face::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 20px;
+        height: 6px;
+        transform: translateX(-50%);
+        border-bottom: 2px solid #211719;
+        border-radius: 50%;
+      }
+
+      /* SCORE POP */
+
+      .score-pop {
+        position: absolute;
+        z-index: 12;
+        pointer-events: none;
+        color: #55c88a;
+        font-size: 22px;
+        font-weight: 900;
+        text-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+        animation: scorePop 0.5s ease forwards;
+      }
+
+      @keyframes scorePop {
+        0% {
+          opacity: 1;
+          transform: translate(-50%, 0) scale(0.8);
+        }
+
+        100% {
+          opacity: 0;
+          transform: translate(-50%, -35px) scale(1.2);
+        }
+      }
+
+      /* PARTICLES */
+
+      .particle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 10;
+      }
+
+      /* CONTROLS */
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      .control-button {
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        color: white;
+        padding: 10px 17px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+
+      .control-button:hover {
+        transform: translateY(-2px);
+        border-color: #8175e8;
+      }
+
+      .restart-button {
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+        border-color: transparent;
+      }
+
+      .instructions {
+        text-align: center;
+        color: #9290aa;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+
+      /* OVERLAY */
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: rgba(8, 8, 25, 0.78);
+        backdrop-filter: blur(8px);
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      .overlay-box {
+        width: min(390px, 90%);
+        padding: 25px 20px;
+        text-align: center;
+        border-radius: 22px;
+        background: rgba(25, 23, 59, 0.97);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .trophy {
+        font-size: 48px;
+        margin-bottom: 7px;
+      }
+
+      .overlay-small {
+        color: #74b9ff;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+
+      .overlay-box h2 {
+        margin-top: 5px;
+        font-size: 27px;
+      }
+
+      .final-score-label {
+        color: #aaa8c5;
+        font-size: 11px;
+        margin-top: 15px;
+        letter-spacing: 1px;
+      }
+
+      .final-score {
+        font-size: 45px;
+        font-weight: 900;
+        margin-top: 2px;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .record-message {
+        color: #55c88a;
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 5px;
+        min-height: 20px;
+      }
+
+      .overlay-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .overlay-button {
+        border: none;
+        padding: 11px 20px;
+        border-radius: 12px;
+        color: white;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+      }
+
+      .close-button {
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+      }
+
+      .back-to-games {
+        display: block;
+        width: fit-content;
+        margin: 10px auto 0;
+        padding: 9px 15px;
+        border-radius: 9px;
+        color: #cfcdf4;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        transition: 0.2s ease;
+      }
+
+      .back-to-games:hover {
+        color: white;
+        background: rgba(129, 117, 232, 0.18);
+        border-color: rgba(129, 117, 232, 0.4);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 600px) {
+        .page {
+          padding: 15px 0 20px;
+        }
+
+        #gameArea {
+          height: 330px;
+        }
+
+        .hud {
+          gap: 5px;
+        }
+
+        .hud-box {
+          padding: 7px 4px;
+        }
+
+        .hud-value {
+          font-size: 17px;
+        }
+
+        .control-button {
+          padding: 9px 13px;
+          font-size: 12px;
+        }
+
+        .hole {
+          width: 78px;
+          height: 45px;
+        }
+
+        .mole {
+          width: 62px;
+          height: 62px;
+        }
+
+        .mole::before,
+        .mole::after {
+          top: 22px;
+          width: 7px;
+          height: 11px;
+        }
+
+        .mole::before {
+          left: 17px;
+        }
+
+        .mole::after {
+          right: 17px;
+        }
+
+        .mole-face {
+          top: 35px;
+          transform: translateX(-50%) scale(0.8);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="top">
+        <div class="game-label">🔨 GAME 06 • ACTION</div>
+
+        <h1>Whack-a-Mole</h1>
+
+        <div id="greeting" class="greeting">Ready, Player!</div>
+      </div>
+
+      <div class="hud">
+        <div class="hud-box">
+          <div class="hud-label">SCORE</div>
+          <div id="score" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">BEST</div>
+          <div id="bestScore" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">TIME</div>
+          <div id="time" class="hud-value">30</div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div id="gameArea">
+          <div class="hole" style="left: 18%; top: 25%"></div>
+          <div class="hole" style="left: 50%; top: 25%"></div>
+          <div class="hole" style="left: 82%; top: 25%"></div>
+
+          <div class="hole" style="left: 32%; top: 51%"></div>
+          <div class="hole" style="left: 68%; top: 51%"></div>
+
+          <div class="hole" style="left: 18%; top: 77%"></div>
+          <div class="hole" style="left: 50%; top: 77%"></div>
+          <div class="hole" style="left: 82%; top: 77%"></div>
+
+          <div id="overlay" class="overlay">
+            <div class="overlay-box">
+              <div id="overlayTrophy" class="trophy">🔨</div>
+
+              <div id="overlaySmall" class="overlay-small">READY?</div>
+
+              <h2 id="overlayTitle">WHACK-A-MOLE</h2>
+
+              <div class="final-score-label">
+                WHACK AS MANY MOLES AS YOU CAN
+              </div>
+
+              <div id="finalScore" class="final-score">0</div>
+
+              <div id="recordMessage" class="record-message">🎮 Good luck!</div>
+
+              <div class="overlay-buttons">
+                <button id="overlayButton" class="overlay-button">
+                  🚀 START GAME
+                </button>
+
+                <button id="closeButton" class="overlay-button close-button">
+                  ✕ CLOSE
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="soundBtn" class="control-button">🔊 Sound On</button>
+
+          <button id="restartBtn" class="control-button restart-button">
+            🔄 Restart Game
+          </button>
+        </div>
+
+        <div class="instructions">
+          🖱️ Click / Tap the mole • ⌨️ Space to restart
+        </div>
+      </div>
+
+      <a href="../index.html#games" class="back-to-games"> ← Back to Games </a>
+    </div>
+
+    <script>
+      const gameArea = document.getElementById("gameArea");
+
+      const scoreElement = document.getElementById("score");
+
+      const bestScoreElement = document.getElementById("bestScore");
+
+      const timeElement = document.getElementById("time");
+
+      const overlay = document.getElementById("overlay");
+
+      const overlayTrophy = document.getElementById("overlayTrophy");
+
+      const overlaySmall = document.getElementById("overlaySmall");
+
+      const overlayTitle = document.getElementById("overlayTitle");
+
+      const finalScore = document.getElementById("finalScore");
+
+      const recordMessage = document.getElementById("recordMessage");
+
+      const overlayButton = document.getElementById("overlayButton");
+
+      const closeButton = document.getElementById("closeButton");
+
+      const soundBtn = document.getElementById("soundBtn");
+
+      const restartBtn = document.getElementById("restartBtn");
+
+      const greeting = document.getElementById("greeting");
+
+      /* PLAYER */
+
+      const playerName = localStorage.getItem("kidsGamePlayerName");
+
+      if (playerName) {
+        greeting.textContent = "👋 Ready, " + playerName + "?";
+      }
+
+      /* VARIABLES */
+
+      let score = 0;
+
+      let bestScore = Number(localStorage.getItem("whackAMoleBest")) || 0;
+
+      let timeLeft = 30;
+
+      let gameRunning = false;
+
+      let soundOn = true;
+
+      let timerInterval = null;
+
+      let moleTimeout = null;
+
+      let activeMole = null;
+
+      let audioContext = null;
+
+      let particles = [];
+
+      let progressionAwarded = false;
+
+      bestScoreElement.textContent = bestScore;
+
+      /* PROGRESSION */
+
+      function getPlayerXP() {
+        return Number(localStorage.getItem("kidsGameXP")) || 0;
+      }
+
+      function addPlayerXP(amount) {
+        const currentXP = getPlayerXP();
+
+        const newXP = currentXP + amount;
+
+        localStorage.setItem("kidsGameXP", newXP);
+
+        return newXP;
+      }
+
+      function getGamesPlayed() {
+        return Number(localStorage.getItem("kidsGamesPlayed")) || 0;
+      }
+
+      function incrementGamesPlayed() {
+        const gamesPlayed = getGamesPlayed() + 1;
+
+        localStorage.setItem("kidsGamesPlayed", gamesPlayed);
+
+        return gamesPlayed;
+      }
+
+      function getAchievements() {
+        try {
+          return JSON.parse(localStorage.getItem("kidsAchievements")) || [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveAchievements(achievements) {
+        localStorage.setItem("kidsAchievements", JSON.stringify(achievements));
+      }
+
+      function unlockAchievement(achievementId) {
+        const achievements = getAchievements();
+
+        if (achievements.includes(achievementId)) {
+          return false;
+        }
+
+        achievements.push(achievementId);
+
+        saveAchievements(achievements);
+
+        return true;
+      }
+
+      function awardProgression(finalGameScore) {
+        if (progressionAwarded) {
+          return;
+        }
+
+        progressionAwarded = true;
+
+        const xpEarned = 10 + Math.min(finalGameScore, 50);
+
+        addPlayerXP(xpEarned);
+
+        incrementGamesPlayed();
+
+        const newAchievements = [];
+
+        if (unlockAchievement("whack_mole_first")) {
+          newAchievements.push("🔨 First Whack!");
+        }
+
+        if (finalGameScore >= 15 && unlockAchievement("whack_mole_15")) {
+          newAchievements.push("⭐ Mole Hunter!");
+        }
+
+        if (finalGameScore >= 25 && unlockAchievement("whack_mole_25")) {
+          newAchievements.push("🔥 Mole Master!");
+        }
+
+        if (finalGameScore >= 40 && unlockAchievement("whack_mole_40")) {
+          newAchievements.push("🏆 Mole Legend!");
+        }
+
+        let message = "⭐ +" + xpEarned + " XP";
+
+        if (newAchievements.length > 0) {
+          message += " • " + newAchievements[0];
+        }
+
+        recordMessage.textContent = message;
+      }
+
+      /* SOUND */
+
+      function playSound(frequency, duration, type = "sine", volume = 0.06) {
+        if (!soundOn) return;
+
+        try {
+          if (!audioContext) {
+            audioContext = new (
+              window.AudioContext || window.webkitAudioContext
+            )();
+          }
+
+          if (audioContext.state === "suspended") {
+            audioContext.resume();
+          }
+
+          const oscillator = audioContext.createOscillator();
+
+          const gain = audioContext.createGain();
+
+          oscillator.type = type;
+
+          oscillator.frequency.value = frequency;
+
+          gain.gain.setValueAtTime(volume, audioContext.currentTime);
+
+          gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            audioContext.currentTime + duration,
+          );
+
+          oscillator.connect(gain);
+
+          gain.connect(audioContext.destination);
+
+          oscillator.start();
+
+          oscillator.stop(audioContext.currentTime + duration);
+        } catch (e) {}
+      }
+
+      soundBtn.addEventListener("click", function () {
+        soundOn = !soundOn;
+
+        soundBtn.textContent = soundOn ? "🔊 Sound On" : "🔇 Sound Off";
+
+        if (soundOn) {
+          playSound(650, 0.1);
+        }
+      });
+
+      /* MOLE POSITIONS */
+
+      function getPositions() {
+        return [
+          {
+            x: 18,
+            y: 25,
+          },
+          {
+            x: 50,
+            y: 25,
+          },
+          {
+            x: 82,
+            y: 25,
+          },
+          {
+            x: 32,
+            y: 51,
+          },
+          {
+            x: 68,
+            y: 51,
+          },
+          {
+            x: 18,
+            y: 77,
+          },
+          {
+            x: 50,
+            y: 77,
+          },
+          {
+            x: 82,
+            y: 77,
+          },
+        ];
+      }
+
+      /* REMOVE MOLE */
+
+      function removeMole() {
+        clearTimeout(moleTimeout);
+
+        if (activeMole) {
+          activeMole.remove();
+
+          activeMole = null;
+        }
+      }
+
+      /* CREATE MOLE */
+
+      function createMole() {
+        if (!gameRunning) return;
+
+        removeMole();
+
+        const positions = getPositions();
+
+        const position =
+          positions[Math.floor(Math.random() * positions.length)];
+
+        const mole = document.createElement("div");
+
+        mole.className = "mole";
+
+        mole.style.left = position.x + "%";
+
+        mole.style.top = position.y + "%";
+
+        const face = document.createElement("div");
+
+        face.className = "mole-face";
+
+        mole.appendChild(face);
+
+        mole.addEventListener("pointerdown", function (event) {
+          event.preventDefault();
+
+          event.stopPropagation();
+
+          whackMole(mole);
+        });
+
+        gameArea.appendChild(mole);
+
+        activeMole = mole;
+
+        requestAnimationFrame(function () {
+          mole.classList.add("show");
+        });
+
+        const visibleTime = Math.max(430, 1050 - score * 18);
+
+        moleTimeout = setTimeout(function () {
+          if (activeMole === mole) {
+            mole.remove();
+
+            activeMole = null;
+          }
+
+          if (gameRunning) {
+            scheduleMole();
+          }
+        }, visibleTime);
+      }
+
+      /* SCHEDULE MOLE */
+
+      function scheduleMole() {
+        if (!gameRunning) return;
+
+        clearTimeout(moleTimeout);
+
+        const delay = Math.max(100, 330 - score * 6);
+
+        moleTimeout = setTimeout(createMole, delay);
+      }
+
+      /* SCORE POP */
+
+      function showScore(mole) {
+        const rect = mole.getBoundingClientRect();
+
+        const areaRect = gameArea.getBoundingClientRect();
+
+        const pop = document.createElement("div");
+
+        pop.className = "score-pop";
+
+        pop.textContent = "+1";
+
+        pop.style.left = rect.left - areaRect.left + rect.width / 2 + "px";
+
+        pop.style.top = rect.top - areaRect.top + "px";
+
+        gameArea.appendChild(pop);
+
+        setTimeout(function () {
+          pop.remove();
+        }, 500);
+      }
+
+      /* PARTICLES */
+
+      function createParticles(x, y) {
+        for (let i = 0; i < 8; i++) {
+          const particle = document.createElement("div");
+
+          particle.className = "particle";
+
+          particle.style.left = x + "px";
+
+          particle.style.top = y + "px";
+
+          particle.style.background = i % 2 === 0 ? "#74b9ff" : "#8175e8";
+
+          gameArea.appendChild(particle);
+
+          particles.push({
+            element: particle,
+            x: x,
+            y: y,
+            dx: (Math.random() - 0.5) * 5,
+            dy: (Math.random() - 0.5) * 5,
+            life: 25,
+          });
+        }
+      }
+
+      function updateParticles() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const particle = particles[i];
+
+          particle.x += particle.dx;
+
+          particle.y += particle.dy;
+
+          particle.dy += 0.12;
+
+          particle.life--;
+
+          particle.element.style.left = particle.x + "px";
+
+          particle.element.style.top = particle.y + "px";
+
+          particle.element.style.opacity = particle.life / 25;
+
+          if (particle.life <= 0) {
+            particle.element.remove();
+
+            particles.splice(i, 1);
+          }
+        }
+
+        if (gameRunning) {
+          window.whackParticleFrame = requestAnimationFrame(updateParticles);
+        }
+      }
+
+      /* WHACK */
+
+      function whackMole(mole) {
+        if (!gameRunning) return;
+
+        if (mole.classList.contains("hit")) {
+          return;
+        }
+
+        mole.classList.add("hit");
+
+        score++;
+
+        scoreElement.textContent = score;
+
+        if (score > bestScore) {
+          bestScore = score;
+
+          bestScoreElement.textContent = bestScore;
+        }
+
+        playSound(700 + score * 4, 0.1, "sine", 0.08);
+
+        showScore(mole);
+
+        const rect = mole.getBoundingClientRect();
+
+        const areaRect = gameArea.getBoundingClientRect();
+
+        createParticles(
+          rect.left - areaRect.left + rect.width / 2,
+          rect.top - areaRect.top + rect.height / 2,
+        );
+
+        if (activeMole === mole) {
+          activeMole = null;
+        }
+
+        clearTimeout(moleTimeout);
+
+        setTimeout(function () {
+          mole.remove();
+        }, 130);
+
+        scheduleMole();
+      }
+
+      /* START */
+
+      function startGame() {
+        clearInterval(timerInterval);
+
+        clearTimeout(moleTimeout);
+
+        cancelAnimationFrame(window.whackParticleFrame);
+
+        document
+          .querySelectorAll(".mole,.particle,.score-pop")
+          .forEach(function (element) {
+            element.remove();
+          });
+
+        activeMole = null;
+
+        particles = [];
+
+        score = 0;
+
+        timeLeft = 30;
+
+        gameRunning = true;
+
+        progressionAwarded = false;
+
+        scoreElement.textContent = "0";
+
+        timeElement.textContent = "30";
+
+        bestScoreElement.textContent = bestScore;
+
+        overlay.classList.add("hidden");
+
+        playSound(550, 0.1);
+
+        createMole();
+
+        updateParticles();
+
+        timerInterval = setInterval(function () {
+          if (!gameRunning) {
+            return;
+          }
+
+          timeLeft--;
+
+          timeElement.textContent = timeLeft;
+
+          if (timeLeft <= 5 && timeLeft > 0) {
+            playSound(450, 0.08, "square");
+          }
+
+          if (timeLeft <= 0) {
+            endGame();
+          }
+        }, 1000);
+      }
+
+      /* END GAME */
+
+      function endGame() {
+        if (!gameRunning) {
+          return;
+        }
+
+        gameRunning = false;
+
+        clearInterval(timerInterval);
+
+        clearTimeout(moleTimeout);
+
+        cancelAnimationFrame(window.whackParticleFrame);
+
+        removeMole();
+
+        const oldBest = Number(localStorage.getItem("whackAMoleBest")) || 0;
+
+        const isNewRecord = score > oldBest;
+
+        if (isNewRecord) {
+          bestScore = score;
+
+          localStorage.setItem("whackAMoleBest", score);
+        } else {
+          bestScore = oldBest;
+        }
+
+        bestScoreElement.textContent = bestScore;
+
+        finalScore.textContent = score;
+
+        /*
+          Shared player progression.
+          Awarded once per completed run.
+        */
+
+        awardProgression(score);
+
+        overlayTrophy.textContent = "🏆";
+
+        overlaySmall.textContent = "TIME'S UP!";
+
+        overlayTitle.textContent = "MOLE MASTER!";
+
+        /*
+          Preserve the progression
+          message unless a new record
+          needs to be shown.
+        */
+
+        if (isNewRecord && score > 0) {
+          const xpEarned = 10 + Math.min(score, 50);
+
+          recordMessage.textContent =
+            "🎉 NEW HIGH SCORE! • ⭐ +" + xpEarned + " XP";
+        }
+
+        overlayButton.textContent = "🚀 PLAY AGAIN";
+
+        overlay.classList.remove("hidden");
+
+        playSound(
+          isNewRecord ? 950 : 220,
+          0.3,
+          isNewRecord ? "sine" : "square",
+          0.08,
+        );
+      }
+
+      /* CLOSE POPUP */
+
+      closeButton.addEventListener("click", function () {
+        overlay.classList.add("hidden");
+      });
+
+      /* BUTTONS */
+
+      overlayButton.addEventListener("click", startGame);
+
+      restartBtn.addEventListener("click", startGame);
+
+      /* SPACE = RESTART */
+
+      document.addEventListener("keydown", function (event) {
+        if (event.code === "Space") {
+          event.preventDefault();
+
+          if (!gameRunning) {
+            startGame();
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

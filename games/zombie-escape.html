@@ -1,0 +1,1412 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Zombie Escape | Kids Game Hub</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: Arial, sans-serif;
+        color: white;
+        background: radial-gradient(
+          circle at top,
+          #27245a 0%,
+          #15142f 45%,
+          #0b0b1b 100%
+        );
+      }
+
+      .page {
+        width: min(800px, 92%);
+        margin: auto;
+        padding: 20px 0 25px;
+      }
+
+      .top {
+        text-align: center;
+        margin-bottom: 14px;
+      }
+
+      .game-label {
+        color: #74b9ff;
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 1.5px;
+        margin-bottom: 5px;
+      }
+
+      h1 {
+        font-size: clamp(28px, 5vw, 42px);
+        font-weight: 900;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .greeting {
+        margin-top: 5px;
+        color: #c9c7df;
+        font-size: 14px;
+      }
+
+      .hud {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .hud-box {
+        background: rgba(20, 19, 50, 0.9);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 14px;
+        padding: 8px;
+        text-align: center;
+      }
+
+      .hud-label {
+        color: #aaa8c5;
+        font-size: 9px;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      .hud-value {
+        margin-top: 3px;
+        font-size: 20px;
+        font-weight: 900;
+      }
+
+      .game-card {
+        position: relative;
+        background: rgba(15, 15, 38, 0.94);
+        border: 1px solid rgba(129, 117, 232, 0.35);
+        border-radius: 22px;
+        padding: 12px;
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.35),
+          0 0 30px rgba(108, 99, 217, 0.08);
+      }
+
+      #gameArea {
+        position: relative;
+        height: 360px;
+        overflow: hidden;
+        border-radius: 17px;
+        background: radial-gradient(
+          circle at center,
+          rgba(50, 47, 100, 0.7) 0%,
+          rgba(18, 17, 45, 0.95) 55%,
+          #0b0b1b 100%
+        );
+        border: 1px solid rgba(116, 185, 255, 0.2);
+        touch-action: none;
+        cursor: crosshair;
+      }
+
+      /* Arena decoration */
+
+      .street-line {
+        position: absolute;
+        background: rgba(129, 117, 232, 0.08);
+        pointer-events: none;
+      }
+
+      .street-line.horizontal {
+        left: 0;
+        right: 0;
+        height: 1px;
+      }
+
+      .street-line.vertical {
+        top: 0;
+        bottom: 0;
+        width: 1px;
+      }
+
+      .line1 {
+        top: 25%;
+      }
+
+      .line2 {
+        top: 50%;
+      }
+
+      .line3 {
+        top: 75%;
+      }
+
+      .line4 {
+        left: 25%;
+      }
+
+      .line5 {
+        left: 50%;
+      }
+
+      .line6 {
+        left: 75%;
+      }
+
+      .player {
+        position: absolute;
+        width: 42px;
+        height: 42px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 31px;
+        z-index: 8;
+        user-select: none;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.5));
+      }
+
+      .player.invincible {
+        animation: blink 0.13s linear infinite alternate;
+      }
+
+      @keyframes blink {
+        from {
+          opacity: 0.35;
+        }
+
+        to {
+          opacity: 1;
+        }
+      }
+
+      .zombie {
+        position: absolute;
+        width: 38px;
+        height: 38px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 29px;
+        z-index: 6;
+        user-select: none;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        filter: drop-shadow(0 4px 7px rgba(0, 0, 0, 0.55));
+      }
+
+      .coin {
+        position: absolute;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 26px;
+        z-index: 5;
+        user-select: none;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        animation: coinPulse 0.8s ease-in-out infinite alternate;
+      }
+
+      @keyframes coinPulse {
+        from {
+          transform: translate(-50%, -50%) scale(0.9);
+        }
+
+        to {
+          transform: translate(-50%, -50%) scale(1.12);
+        }
+      }
+
+      .particle {
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        pointer-events: none;
+        z-index: 15;
+        animation: particleFly 0.55s ease-out forwards;
+      }
+
+      @keyframes particleFly {
+        from {
+          opacity: 1;
+          transform: translate(0, 0) scale(1);
+        }
+
+        to {
+          opacity: 0;
+          transform: translate(var(--dx), var(--dy)) scale(0.2);
+        }
+      }
+
+      .damage-text {
+        position: absolute;
+        z-index: 20;
+        color: #ff7675;
+        font-size: 18px;
+        font-weight: 900;
+        pointer-events: none;
+        transform: translate(-50%, -50%);
+        animation: damageFloat 0.7s ease-out forwards;
+      }
+
+      @keyframes damageFloat {
+        from {
+          opacity: 1;
+          transform: translate(-50%, -50%) translateY(0) scale(1);
+        }
+
+        to {
+          opacity: 0;
+          transform: translate(-50%, -50%) translateY(-35px) scale(1.15);
+        }
+      }
+
+      .controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+      }
+
+      .control-button {
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        color: white;
+        padding: 10px 17px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+
+      .control-button:hover {
+        transform: translateY(-2px);
+        border-color: #8175e8;
+      }
+
+      .restart-button {
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+        border-color: transparent;
+      }
+
+      .instructions {
+        text-align: center;
+        color: #9290aa;
+        font-size: 12px;
+        margin-top: 10px;
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 20;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        background: rgba(8, 8, 25, 0.78);
+        backdrop-filter: blur(8px);
+      }
+
+      .overlay.hidden {
+        display: none;
+      }
+
+      .overlay-box {
+        width: min(390px, 90%);
+        padding: 25px 20px;
+        text-align: center;
+        border-radius: 22px;
+        background: rgba(25, 23, 59, 0.97);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .trophy {
+        font-size: 48px;
+        margin-bottom: 7px;
+      }
+
+      .overlay-small {
+        color: #74b9ff;
+        font-size: 12px;
+        font-weight: bold;
+        letter-spacing: 2px;
+      }
+
+      .overlay-box h2 {
+        margin-top: 5px;
+        font-size: 27px;
+      }
+
+      .final-score-label {
+        color: #aaa8c5;
+        font-size: 11px;
+        margin-top: 15px;
+        letter-spacing: 1px;
+      }
+
+      .final-score {
+        font-size: 45px;
+        font-weight: 900;
+        margin-top: 2px;
+        background: linear-gradient(90deg, #8175e8, #74b9ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .record-message {
+        color: #55c88a;
+        font-size: 14px;
+        font-weight: bold;
+        margin-top: 5px;
+        min-height: 20px;
+      }
+
+      .overlay-buttons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+      }
+
+      .overlay-button {
+        border: none;
+        padding: 11px 22px;
+        border-radius: 12px;
+        color: white;
+        font-size: 13px;
+        font-weight: 900;
+        cursor: pointer;
+        background: linear-gradient(135deg, #6c63d9, #5f9eea);
+      }
+
+      .overlay-buttons .overlay-button {
+        margin-top: 0;
+      }
+
+      .overlay-button.close-button {
+        background: linear-gradient(135deg, #27245a, #1c1a42);
+        border: 1px solid rgba(129, 117, 232, 0.5);
+      }
+
+      .back-to-games {
+        display: block;
+        width: fit-content;
+        margin: 10px auto 0;
+        padding: 9px 15px;
+        border-radius: 9px;
+        color: #cfcdf4;
+        text-decoration: none;
+        font-size: 11px;
+        font-weight: 800;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        transition: 0.2s ease;
+      }
+
+      .back-to-games:hover {
+        color: white;
+        background: rgba(129, 117, 232, 0.18);
+        border-color: rgba(129, 117, 232, 0.4);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width: 600px) {
+        .page {
+          padding: 15px 0 20px;
+        }
+
+        #gameArea {
+          height: 330px;
+        }
+
+        .hud {
+          gap: 5px;
+        }
+
+        .hud-box {
+          padding: 7px 4px;
+        }
+
+        .hud-value {
+          font-size: 17px;
+        }
+
+        .control-button {
+          padding: 9px 13px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="page">
+      <div class="top">
+        <div class="game-label">🧟 GAME 07 • SURVIVAL</div>
+
+        <h1>Zombie Escape</h1>
+
+        <div id="greeting" class="greeting">Ready, Player!</div>
+      </div>
+
+      <div class="hud">
+        <div class="hud-box">
+          <div class="hud-label">SCORE</div>
+
+          <div id="score" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">BEST</div>
+
+          <div id="bestScore" class="hud-value">0</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">TIME</div>
+
+          <div id="time" class="hud-value">30</div>
+        </div>
+
+        <div class="hud-box">
+          <div class="hud-label">LIVES</div>
+
+          <div id="lives" class="hud-value">❤️❤️❤️</div>
+        </div>
+      </div>
+
+      <div class="game-card">
+        <div id="gameArea">
+          <div class="street-line horizontal line1"></div>
+          <div class="street-line horizontal line2"></div>
+          <div class="street-line horizontal line3"></div>
+
+          <div class="street-line vertical line4"></div>
+          <div class="street-line vertical line5"></div>
+          <div class="street-line vertical line6"></div>
+
+          <div id="player" class="player">🏃</div>
+
+          <div id="overlay" class="overlay">
+            <div class="overlay-box">
+              <div id="overlayTrophy" class="trophy">🧟</div>
+
+              <div id="overlaySmall" class="overlay-small">READY?</div>
+
+              <h2 id="overlayTitle">ZOMBIE ESCAPE</h2>
+
+              <div class="final-score-label">ESCAPE • COLLECT • SURVIVE</div>
+
+              <div id="finalScore" class="final-score">0</div>
+
+              <div id="recordMessage" class="record-message">🎮 Good luck!</div>
+
+              <div class="overlay-buttons">
+                <button id="overlayButton" class="overlay-button">
+                  🚀 START GAME
+                </button>
+
+                <button id="closeButton" class="overlay-button close-button">
+                  ✕ CLOSE
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button id="soundBtn" class="control-button">🔊 Sound On</button>
+
+          <button id="restartBtn" class="control-button restart-button">
+            🔄 Restart Game
+          </button>
+        </div>
+
+        <div class="instructions">⌨️ ← → ↑ ↓ / WASD • 🖱️ Mouse • 📱 Touch</div>
+      </div>
+
+      <a href="../index.html#games" class="back-to-games"> ← Back to Games </a>
+    </div>
+
+    <script>
+      const gameArea = document.getElementById("gameArea");
+
+      const player = document.getElementById("player");
+
+      const scoreElement = document.getElementById("score");
+
+      const bestScoreElement = document.getElementById("bestScore");
+
+      const timeElement = document.getElementById("time");
+
+      const livesElement = document.getElementById("lives");
+
+      const greeting = document.getElementById("greeting");
+
+      const overlay = document.getElementById("overlay");
+
+      const overlayButton = document.getElementById("overlayButton");
+
+      const closeButton = document.getElementById("closeButton");
+
+      const finalScore = document.getElementById("finalScore");
+
+      const recordMessage = document.getElementById("recordMessage");
+
+      const soundBtn = document.getElementById("soundBtn");
+
+      const restartBtn = document.getElementById("restartBtn");
+
+      /* -------------------------
+         PLAYER NAME
+      ------------------------- */
+
+      const savedPlayer = localStorage.getItem("kidsGamePlayerName");
+
+      if (savedPlayer) {
+        greeting.textContent = "Ready, " + savedPlayer + "!";
+      }
+
+      /* -------------------------
+         SCORE
+      ------------------------- */
+
+      let score = 0;
+
+      let bestScore = Number(localStorage.getItem("zombieEscapeBest")) || 0;
+
+      let lives = 3;
+
+      let timeLeft = 30;
+
+      /* -------------------------
+         GAME STATE
+      ------------------------- */
+
+      let gameRunning = false;
+
+      let timerInterval = null;
+
+      let animationFrame = null;
+
+      let spawnTimer = null;
+
+      let coinTimer = null;
+
+      let soundEnabled = true;
+
+      let invincibleUntil = 0;
+
+      let progressionAwarded = false;
+
+      /* -------------------------
+         PLAYER POSITION
+      ------------------------- */
+
+      let playerX = 50;
+
+      let playerY = 50;
+
+      const keys = {};
+
+      /* -------------------------
+         OBJECTS
+      ------------------------- */
+
+      let zombies = [];
+
+      let coins = [];
+
+      bestScoreElement.textContent = bestScore;
+
+      /* -------------------------
+         SOUND
+      ------------------------- */
+
+      let audioContext = null;
+
+      function initAudio() {
+        if (!audioContext) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+
+          if (AudioCtx) {
+            audioContext = new AudioCtx();
+          }
+        }
+      }
+
+      function playSound(frequency, duration, type = "sine", volume = 0.06) {
+        if (!soundEnabled) {
+          return;
+        }
+
+        initAudio();
+
+        if (!audioContext) {
+          return;
+        }
+
+        if (audioContext.state === "suspended") {
+          audioContext.resume();
+        }
+
+        const oscillator = audioContext.createOscillator();
+
+        const gain = audioContext.createGain();
+
+        oscillator.type = type;
+
+        oscillator.frequency.value = frequency;
+
+        gain.gain.setValueAtTime(volume, audioContext.currentTime);
+
+        gain.gain.exponentialRampToValueAtTime(
+          0.001,
+          audioContext.currentTime + duration,
+        );
+
+        oscillator.connect(gain);
+
+        gain.connect(audioContext.destination);
+
+        oscillator.start();
+
+        oscillator.stop(audioContext.currentTime + duration);
+      }
+
+      /* -------------------------
+         PROGRESSION
+      ------------------------- */
+
+      function getPlayerXP() {
+        return Number(localStorage.getItem("kidsGameXP")) || 0;
+      }
+
+      function addPlayerXP(amount) {
+        const currentXP = getPlayerXP();
+
+        const newXP = currentXP + amount;
+
+        localStorage.setItem("kidsGameXP", newXP);
+
+        return newXP;
+      }
+
+      function getGamesPlayed() {
+        return Number(localStorage.getItem("kidsGamesPlayed")) || 0;
+      }
+
+      function incrementGamesPlayed() {
+        const gamesPlayed = getGamesPlayed() + 1;
+
+        localStorage.setItem("kidsGamesPlayed", gamesPlayed);
+
+        return gamesPlayed;
+      }
+
+      function getAchievements() {
+        try {
+          return JSON.parse(localStorage.getItem("kidsAchievements")) || [];
+        } catch (error) {
+          return [];
+        }
+      }
+
+      function saveAchievements(achievements) {
+        localStorage.setItem("kidsAchievements", JSON.stringify(achievements));
+      }
+
+      function unlockAchievement(achievementId) {
+        const achievements = getAchievements();
+
+        if (achievements.includes(achievementId)) {
+          return false;
+        }
+
+        achievements.push(achievementId);
+
+        saveAchievements(achievements);
+
+        return true;
+      }
+
+      function awardProgression(finalGameScore) {
+        if (progressionAwarded) {
+          return;
+        }
+
+        progressionAwarded = true;
+
+        const xpEarned = 10 + Math.min(finalGameScore, 50);
+
+        addPlayerXP(xpEarned);
+
+        incrementGamesPlayed();
+
+        const newAchievements = [];
+
+        if (unlockAchievement("zombie_escape_first")) {
+          newAchievements.push("🧟 First Escape!");
+        }
+
+        if (finalGameScore >= 15 && unlockAchievement("zombie_escape_15")) {
+          newAchievements.push("⭐ Survivor!");
+        }
+
+        if (finalGameScore >= 30 && unlockAchievement("zombie_escape_30")) {
+          newAchievements.push("🔥 Zombie Hunter!");
+        }
+
+        if (finalGameScore >= 50 && unlockAchievement("zombie_escape_50")) {
+          newAchievements.push("🏆 Apocalypse Legend!");
+        }
+
+        let message = "⭐ +" + xpEarned + " XP";
+
+        if (newAchievements.length > 0) {
+          message += " • " + newAchievements[0];
+        }
+
+        recordMessage.textContent = message;
+      }
+
+      /* -------------------------
+         UPDATE HUD
+      ------------------------- */
+
+      function updateHUD() {
+        scoreElement.textContent = score;
+
+        bestScoreElement.textContent = bestScore;
+
+        timeElement.textContent = timeLeft;
+
+        livesElement.textContent =
+          "❤️".repeat(lives) + "🖤".repeat(Math.max(0, 3 - lives));
+      }
+
+      /* -------------------------
+         PLAYER
+      ------------------------- */
+
+      function updatePlayer() {
+        const speed = 0.65;
+
+        if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
+          playerX -= speed;
+        }
+
+        if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
+          playerX += speed;
+        }
+
+        if (keys["ArrowUp"] || keys["w"] || keys["W"]) {
+          playerY -= speed;
+        }
+
+        if (keys["ArrowDown"] || keys["s"] || keys["S"]) {
+          playerY += speed;
+        }
+
+        playerX = Math.max(5, Math.min(95, playerX));
+
+        playerY = Math.max(8, Math.min(92, playerY));
+
+        player.style.left = playerX + "%";
+
+        player.style.top = playerY + "%";
+      }
+
+      function movePlayerFromPointer(event) {
+        if (!gameRunning) {
+          return;
+        }
+
+        const rect = gameArea.getBoundingClientRect();
+
+        let x = ((event.clientX - rect.left) / rect.width) * 100;
+
+        let y = ((event.clientY - rect.top) / rect.height) * 100;
+
+        playerX = Math.max(5, Math.min(95, x));
+
+        playerY = Math.max(8, Math.min(92, y));
+
+        updatePlayer();
+      }
+
+      gameArea.addEventListener("pointerdown", function (event) {
+        if (!gameRunning) {
+          return;
+        }
+
+        movePlayerFromPointer(event);
+      });
+
+      gameArea.addEventListener("pointermove", function (event) {
+        if (event.buttons === 0 && event.pointerType !== "touch") {
+          return;
+        }
+
+        movePlayerFromPointer(event);
+      });
+
+      document.addEventListener("keydown", function (event) {
+        keys[event.key] = true;
+
+        if (
+          ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(
+            event.key,
+          )
+        ) {
+          event.preventDefault();
+        }
+      });
+
+      document.addEventListener("keyup", function (event) {
+        keys[event.key] = false;
+      });
+
+      /* -------------------------
+         CREATE ZOMBIE
+      ------------------------- */
+
+      function createZombie() {
+        if (!gameRunning) {
+          return;
+        }
+
+        const element = document.createElement("div");
+
+        element.className = "zombie";
+
+        element.textContent = "🧟";
+
+        const side = Math.floor(Math.random() * 4);
+
+        let x;
+        let y;
+
+        if (side === 0) {
+          x = Math.random() * 100;
+
+          y = -5;
+        } else if (side === 1) {
+          x = 105;
+
+          y = Math.random() * 100;
+        } else if (side === 2) {
+          x = Math.random() * 100;
+
+          y = 105;
+        } else {
+          x = -5;
+
+          y = Math.random() * 100;
+        }
+
+        element.style.left = x + "%";
+
+        element.style.top = y + "%";
+
+        gameArea.appendChild(element);
+
+        zombies.push({
+          element,
+          x,
+          y,
+          speed: 0.16 + Math.min(0.22, score * 0.006),
+        });
+      }
+
+      /* -------------------------
+         CREATE COIN
+      ------------------------- */
+
+      function createCoin() {
+        if (!gameRunning) {
+          return;
+        }
+
+        const element = document.createElement("div");
+
+        element.className = "coin";
+
+        element.textContent = "🪙";
+
+        const x = 10 + Math.random() * 80;
+
+        const y = 10 + Math.random() * 80;
+
+        element.style.left = x + "%";
+
+        element.style.top = y + "%";
+
+        gameArea.appendChild(element);
+
+        coins.push({
+          element,
+          x,
+          y,
+        });
+      }
+
+      /* -------------------------
+         REMOVE OBJECTS
+      ------------------------- */
+
+      function clearObjects() {
+        zombies.forEach((zombie) => zombie.element.remove());
+
+        coins.forEach((coin) => coin.element.remove());
+
+        zombies = [];
+
+        coins = [];
+      }
+
+      /* -------------------------
+         DISTANCE
+      ------------------------- */
+
+      function distance(x1, y1, x2, y2) {
+        const dx = x1 - x2;
+
+        const dy = y1 - y2;
+
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+
+      /* -------------------------
+         PARTICLES
+      ------------------------- */
+
+      function createParticles(x, y, amount = 8) {
+        for (let i = 0; i < amount; i++) {
+          const particle = document.createElement("div");
+
+          particle.className = "particle";
+
+          particle.style.left = x + "%";
+
+          particle.style.top = y + "%";
+
+          particle.style.setProperty("--dx", Math.random() * 70 - 35 + "px");
+
+          particle.style.setProperty("--dy", Math.random() * 70 - 35 + "px");
+
+          gameArea.appendChild(particle);
+
+          setTimeout(() => particle.remove(), 600);
+        }
+      }
+
+      /* -------------------------
+         DAMAGE EFFECT
+      ------------------------- */
+
+      function createDamageText() {
+        const text = document.createElement("div");
+
+        text.className = "damage-text";
+
+        text.textContent = "-1 ❤️";
+
+        text.style.left = playerX + "%";
+
+        text.style.top = playerY + "%";
+
+        gameArea.appendChild(text);
+
+        setTimeout(() => text.remove(), 750);
+      }
+
+      /* -------------------------
+         COIN COLLECTION
+      ------------------------- */
+
+      function checkCoins() {
+        for (let i = coins.length - 1; i >= 0; i--) {
+          const coin = coins[i];
+
+          if (distance(playerX, playerY, coin.x, coin.y) < 7) {
+            createParticles(coin.x, coin.y, 10);
+
+            playSound(850, 0.12, "sine", 0.07);
+
+            score++;
+
+            coin.element.remove();
+
+            coins.splice(i, 1);
+
+            if (score > bestScore) {
+              bestScore = score;
+
+              bestScoreElement.textContent = bestScore;
+            }
+
+            updateHUD();
+          }
+        }
+      }
+
+      /* -------------------------
+         ZOMBIE COLLISIONS
+      ------------------------- */
+
+      function checkZombieCollisions() {
+        const now = Date.now();
+
+        if (now < invincibleUntil) {
+          return;
+        }
+
+        for (let i = zombies.length - 1; i >= 0; i--) {
+          const zombie = zombies[i];
+
+          if (distance(playerX, playerY, zombie.x, zombie.y) < 7) {
+            lives--;
+
+            invincibleUntil = now + 900;
+
+            player.classList.add("invincible");
+
+            createParticles(playerX, playerY, 14);
+
+            createDamageText();
+
+            playSound(140, 0.2, "sawtooth", 0.09);
+
+            zombie.element.remove();
+
+            zombies.splice(i, 1);
+
+            updateHUD();
+
+            setTimeout(function () {
+              player.classList.remove("invincible");
+            }, 950);
+
+            if (lives <= 0) {
+              endGame();
+            }
+
+            return;
+          }
+        }
+      }
+
+      /* -------------------------
+         MOVE ZOMBIES
+      ------------------------- */
+
+      function updateZombies() {
+        for (let i = zombies.length - 1; i >= 0; i--) {
+          const zombie = zombies[i];
+
+          const dx = playerX - zombie.x;
+
+          const dy = playerY - zombie.y;
+
+          const length = Math.sqrt(dx * dx + dy * dy);
+
+          if (length > 0) {
+            zombie.x += (dx / length) * zombie.speed;
+
+            zombie.y += (dy / length) * zombie.speed;
+          }
+
+          zombie.element.style.left = zombie.x + "%";
+
+          zombie.element.style.top = zombie.y + "%";
+
+          if (
+            zombie.x < -15 ||
+            zombie.x > 115 ||
+            zombie.y < -15 ||
+            zombie.y > 115
+          ) {
+            zombie.element.remove();
+
+            zombies.splice(i, 1);
+          }
+        }
+      }
+
+      /* -------------------------
+         SPAWN RATE
+      ------------------------- */
+
+      function getSpawnRate() {
+        return Math.max(380, 950 - score * 28);
+      }
+
+      function restartSpawner() {
+        clearInterval(spawnTimer);
+
+        spawnTimer = setInterval(function () {
+          createZombie();
+        }, getSpawnRate());
+      }
+
+      /* -------------------------
+         COIN SPAWNER
+      ------------------------- */
+
+      function restartCoinSpawner() {
+        clearInterval(coinTimer);
+
+        coinTimer = setInterval(function () {
+          if (coins.length < 3) {
+            createCoin();
+          }
+        }, 1800);
+      }
+
+      /* -------------------------
+         TIMER
+      ------------------------- */
+
+      function startTimer() {
+        clearInterval(timerInterval);
+
+        timerInterval = setInterval(function () {
+          if (!gameRunning) {
+            return;
+          }
+
+          timeLeft--;
+
+          updateHUD();
+
+          if (timeLeft <= 5 && timeLeft > 0) {
+            playSound(500, 0.08, "square", 0.04);
+          }
+
+          if (timeLeft <= 0) {
+            endGame();
+          }
+        }, 1000);
+      }
+
+      /* -------------------------
+         GAME LOOP
+      ------------------------- */
+
+      function gameLoop() {
+        if (!gameRunning) {
+          return;
+        }
+
+        updatePlayer();
+
+        updateZombies();
+
+        checkCoins();
+
+        checkZombieCollisions();
+
+        if (score > 0 && score % 5 === 0) {
+          restartSpawner();
+        }
+
+        animationFrame = requestAnimationFrame(gameLoop);
+      }
+
+      /* -------------------------
+         START GAME
+      ------------------------- */
+
+      function startGame() {
+        cancelAnimationFrame(animationFrame);
+
+        clearInterval(timerInterval);
+
+        clearInterval(spawnTimer);
+
+        clearInterval(coinTimer);
+
+        clearObjects();
+
+        score = 0;
+
+        lives = 3;
+
+        timeLeft = 30;
+
+        playerX = 50;
+
+        playerY = 50;
+
+        invincibleUntil = 0;
+
+        progressionAwarded = false;
+
+        player.classList.remove("invincible");
+
+        updatePlayer();
+
+        updateHUD();
+
+        overlay.classList.add("hidden");
+
+        gameRunning = true;
+
+        createCoin();
+
+        createCoin();
+
+        createZombie();
+
+        createZombie();
+
+        restartSpawner();
+
+        restartCoinSpawner();
+
+        startTimer();
+
+        playSound(650, 0.15, "sine", 0.07);
+
+        gameLoop();
+      }
+
+      /* -------------------------
+         END GAME
+      ------------------------- */
+
+      function endGame() {
+        if (!gameRunning) {
+          return;
+        }
+
+        gameRunning = false;
+
+        cancelAnimationFrame(animationFrame);
+
+        clearInterval(timerInterval);
+
+        clearInterval(spawnTimer);
+
+        clearInterval(coinTimer);
+
+        const oldBest = Number(localStorage.getItem("zombieEscapeBest")) || 0;
+
+        const isNewRecord = score > oldBest;
+
+        if (isNewRecord) {
+          bestScore = score;
+
+          localStorage.setItem("zombieEscapeBest", score);
+
+          recordMessage.textContent = "🏆 NEW RECORD!";
+
+          playSound(900, 0.15, "sine", 0.08);
+
+          setTimeout(function () {
+            playSound(1200, 0.2, "sine", 0.08);
+          }, 120);
+        } else {
+          bestScore = oldBest;
+
+          recordMessage.textContent = "🧟 Great escape!";
+
+          playSound(180, 0.35, "sawtooth", 0.08);
+        }
+
+        bestScoreElement.textContent = bestScore;
+
+        finalScore.textContent = score;
+
+        /*
+          SHARED PLAYER PROGRESSION
+
+          Award exactly once for this
+          completed run.
+        */
+
+        awardProgression(score);
+
+        /*
+          If this was a new record,
+          show both the record and XP.
+        */
+
+        if (isNewRecord) {
+          const xpEarned = 10 + Math.min(score, 50);
+
+          recordMessage.textContent =
+            "🏆 NEW RECORD! • ⭐ +" + xpEarned + " XP";
+        }
+
+        overlayTrophy.textContent = lives <= 0 ? "💀" : "🏆";
+
+        overlaySmall.textContent = lives <= 0 ? "GAME OVER!" : "TIME'S UP!";
+
+        overlayTitle.textContent = "ZOMBIE ESCAPE";
+
+        overlayButton.textContent = "🚀 PLAY AGAIN";
+
+        overlay.classList.remove("hidden");
+      }
+
+      /* -------------------------
+         BUTTONS
+      ------------------------- */
+
+      overlayButton.addEventListener("click", function () {
+        initAudio();
+
+        startGame();
+      });
+
+      restartBtn.addEventListener("click", function () {
+        initAudio();
+
+        startGame();
+      });
+
+      soundBtn.addEventListener("click", function () {
+        soundEnabled = !soundEnabled;
+
+        soundBtn.textContent = soundEnabled ? "🔊 Sound On" : "🔇 Sound Off";
+
+        if (soundEnabled) {
+          initAudio();
+
+          playSound(650, 0.1, "sine", 0.06);
+        }
+      });
+
+      closeButton.addEventListener("click", function () {
+        overlay.classList.add("hidden");
+      });
+
+      /* -------------------------
+         INITIAL STATE
+      ------------------------- */
+
+      updatePlayer();
+
+      updateHUD();
+    </script>
+  </body>
+</html>
